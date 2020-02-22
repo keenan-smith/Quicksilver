@@ -1,4 +1,5 @@
 #include "mmap.h"
+#include "utils.h"
 #include <TlHelp32.h>
 
 bool mmap::attach_to_process(const char* process_name) {
@@ -16,7 +17,7 @@ bool mmap::attach_to_process(const char* process_name) {
             {
                 HANDLE hProcess = OpenProcess(PROCESS_ALL_ACCESS, FALSE, entry.th32ProcessID);
                 if (!hProcess) {
-                    logger::LOG_ENTRY("Error obtaining a handle to process");
+                    LOGENTRY("Error obtaining a handle to process");
                     return false; 
                 }
                 this->hProcess = hProcess;
@@ -31,9 +32,75 @@ bool mmap::attach_to_process(const char* process_name) {
 bool mmap::load_dll(const char* file_name) {
     std::ifstream f(file_name, std::ios::binary | std::ios::ate);
     if (!f) {
-        logger::LOG_ENTRY("Error opening file");
+        LOGENTRY("Error opening DLL file");
         return false;
     }
 
+    std::ifstream::pos_type pos{ f.tellg() };
+    data_size = pos;
 
+    raw_data = new uint8_t[data_size];
+
+    if (!raw_data) {
+        LOGENTRY("Error allocating space for DLL");
+        return false;
+    }
+
+    f.seekg(0, std::ios::beg);
+    f.read((char*)raw_data, data_size);
+
+    f.close();
+    return true;
+}
+
+bool mmap::inject() {
+    if (hProcess == NULL) {
+        LOGENTRY("Handle is invalid");
+        return false;
+    }
+
+    if (!raw_data) {
+        LOGENTRY("Dll buffer is empty");
+        return false;
+    }
+
+    IMAGE_DOS_HEADER* dos_header{ (IMAGE_DOS_HEADER*)raw_data };
+    if (dos_header->e_magic != IMAGE_DOS_SIGNATURE) {
+        LOGENTRY("Invalid DOS header signature");
+        return false;
+    }
+
+    IMAGE_NT_HEADERS* nt_header{ (IMAGE_NT_HEADERS*)(&raw_data[dos_header->e_lfanew]) };
+    if (nt_header->Signature != IMAGE_NT_SIGNATURE) {
+        LOGENTRY("Invalid NT header signature");
+        return false;
+    }
+
+    uint64_t base{ (uint64_t)VirtualAllocEx(hProcess, NULL, nt_header->OptionalHeader.SizeOfImage, MEM_COMMIT | MEM_RESERVE, PAGE_EXECUTE_READWRITE) };
+    if (!base) {
+        LOGENTRY("Unable to allocate memory in remote process for the image");
+        return false;
+    }
+
+    LOGENTRY("Image base: 0x" + utils::int_to_hex<uint64_t>(base));
+
+
+}
+
+uint64_t* mmap::ptr_from_rva(uint64_t rva, IMAGE_NT_HEADERS* nt_header, uint8_t* image_base) {
+    PIMAGE_SECTION_HEADER section_header{ enclosing_section_header(rva, nt_header) };
+    
+    if (!section_header)
+        return 0;
+
+    int64_t delta{ (int64_t)(section_header->VirtualAddress - section_header->PointerToRawData) };
+    return (uint64_t*)(image_base + rva - delta);
+}
+
+PIMAGE_SECTION_HEADER mmap::enclosing_section_header(uint64_t rva, PIMAGE_NT_HEADERS nt_header) {
+    PIMAGE_SECTION_HEADER section{ IMAGE_FIRST_SECTION(nt_header) };
+
+    for (int i = 0; i < nt_header->FileHeader.NumberOfSections; i++, section++) {
+
+    }
 }
