@@ -126,3 +126,4 @@ void mmap::solve_imports(uint8_t* base, IMAGE_NT_HEADERS* nt_header, IMAGE_IMPOR
         import_descriptor++;
     }
 }
+
