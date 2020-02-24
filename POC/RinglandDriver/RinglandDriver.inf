@@ -1,0 +1,86 @@
+;
+; RinglandDriver.inf
+;
+
+[Version]
+Signature="$WINDOWS NT$"
+Class=Sample ; TODO: edit Class
+ClassGuid={78A1C341-4539-11d3-B88D-00C04FAD5171} ; TODO: edit ClassGuid
+Provider=%ManufacturerName%
+CatalogFile=RinglandDriver.cat
+DriverVer= ; TODO: set DriverVer in stampinf property pages
+
+[DestinationDirs]
+DefaultDestDir = 12
+RinglandDriver_Device_CoInstaller_CopyFiles = 11
+
+; ================= Class section =====================
+
+[ClassInstall32]
+Addreg=SampleClassReg
+
+[SampleClassReg]
+HKR,,,0,%ClassName%
+HKR,,Icon,,-5
+
+[SourceDisksNames]
+1 = %DiskName%,,,""
+
+[SourceDisksFiles]
+RinglandDriver.sys  = 1,,
+WdfCoInstaller$KMDFCOINSTALLERVERSION$.dll=1 ; make sure the number matches with SourceDisksNames
+
+;*****************************************
+; Install Section
+;*****************************************
+
+[Manufacturer]
+%ManufacturerName%=Standard,NT$ARCH$
+
+[Standard.NT$ARCH$]
+%RinglandDriver.DeviceDesc%=RinglandDriver_Device, Root\RinglandDriver ; TODO: edit hw-id
+
+[RinglandDriver_Device.NT]
+CopyFiles=Drivers_Dir
+
+[Drivers_Dir]
+RinglandDriver.sys
+
+;-------------- Service installation
+[RinglandDriver_Device.NT.Services]
+AddService = RinglandDriver,%SPSVCINST_ASSOCSERVICE%, RinglandDriver_Service_Inst
+
+; -------------- RinglandDriver driver install sections
+[RinglandDriver_Service_Inst]
+DisplayName    = %RinglandDriver.SVCDESC%
+ServiceType    = 1               ; SERVICE_KERNEL_DRIVER
+StartType      = 3               ; SERVICE_DEMAND_START
+ErrorControl   = 1               ; SERVICE_ERROR_NORMAL
+ServiceBinary  = %12%\RinglandDriver.sys
+
+;
+;--- RinglandDriver_Device Coinstaller installation ------
+;
+
+[RinglandDriver_Device.NT.CoInstallers]
+AddReg=RinglandDriver_Device_CoInstaller_AddReg
+CopyFiles=RinglandDriver_Device_CoInstaller_CopyFiles
+
+[RinglandDriver_Device_CoInstaller_AddReg]
+HKR,,CoInstallers32,0x00010000, "WdfCoInstaller$KMDFCOINSTALLERVERSION$.dll,WdfCoInstaller"
+
+[RinglandDriver_Device_CoInstaller_CopyFiles]
+WdfCoInstaller$KMDFCOINSTALLERVERSION$.dll
+
+[RinglandDriver_Device.NT.Wdf]
+KmdfService =  RinglandDriver, RinglandDriver_wdfsect
+[RinglandDriver_wdfsect]
+KmdfLibraryVersion = $KMDFVERSION$
+
+[Strings]
+SPSVCINST_ASSOCSERVICE= 0x00000002
+ManufacturerName="<Your manufacturer name>" ;TODO: Replace with your manufacturer name
+ClassName="Samples" ; TODO: edit ClassName
+DiskName = "RinglandDriver Installation Disk"
+RinglandDriver.DeviceDesc = "RinglandDriver Device"
+RinglandDriver.SVCDESC = "RinglandDriver Service"

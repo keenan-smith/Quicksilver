@@ -101,6 +101,28 @@ PIMAGE_SECTION_HEADER mmap::enclosing_section_header(uint64_t rva, PIMAGE_NT_HEA
     PIMAGE_SECTION_HEADER section{ IMAGE_FIRST_SECTION(nt_header) };
 
     for (int i = 0; i < nt_header->FileHeader.NumberOfSections; i++, section++) {
+        uint64_t size{ section->Misc.VirtualSize };
+        if (!size)
+            size = section->SizeOfRawData;
+        if ((rva >= section->VirtualAddress) && (rva < (section->VirtualAddress + size)))
+            return section;
+    }
 
+    return 0;
+}
+
+void mmap::solve_imports(uint8_t* base, IMAGE_NT_HEADERS* nt_header, IMAGE_IMPORT_DESCRIPTOR* import_descriptor) {
+    char* module;
+    while ((module = (char*)ptr_from_rva((DWORD64)(import_descriptor->Name), nt_header, (PBYTE)base))) {
+        HMODULE local_module{ LoadLibrary(module) };
+
+        IMAGE_THUNK_DATA* thunk_data{ (IMAGE_THUNK_DATA*)ptr_from_rva((DWORD64)((thunk_data->u1.AddressOfData)), nt_header, (PBYTE)base) };
+
+        while (thunk_data->u1.AddressOfData) {
+            IMAGE_IMPORT_BY_NAME* iibn{ (IMAGE_IMPORT_BY_NAME*)ptr_from_rva((DWORD64)((thunk_data->u1.AddressOfData)), nt_header, (PBYTE)base) };
+            thunk_data->u1.Function = (uint64_t)(get_proc_address(module, (char*)iibn->Name));
+            thunk_data++;
+        }
+        import_descriptor++;
     }
 }
