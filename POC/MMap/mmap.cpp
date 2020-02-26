@@ -82,7 +82,7 @@ bool mmap::inject() {
         return false;
     }
 
-    LOGENTRY("Image base: 0x" + utils::int_to_hex<uint64_t>(base));
+    LOGENTRY("Image base: 0x" + int_to_hex<uint64_t>(base));
 
 
 }
@@ -120,7 +120,7 @@ void mmap::solve_imports(uint8_t* base, IMAGE_NT_HEADERS* nt_header, IMAGE_IMPOR
 
         while (thunk_data->u1.AddressOfData) {
             IMAGE_IMPORT_BY_NAME* iibn{ (IMAGE_IMPORT_BY_NAME*)ptr_from_rva((DWORD64)((thunk_data->u1.AddressOfData)), nt_header, (PBYTE)base) };
-            thunk_data->u1.Function = (uint64_t)(get_proc_address(module, (char*)iibn->Name));
+            //thunk_data->u1.Function = (uint64_t)(get_proc_address(module, (char*)iibn->Name));
             thunk_data++;
         }
         import_descriptor++;

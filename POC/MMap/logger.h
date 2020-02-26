@@ -1,9 +1,8 @@
 #pragma once
 #include <string>
-#define LOGENTRY(a) logger::LOG_ENTRY(a)
-static class logger
-{
-public:
-	static void LOG_ENTRY(std::string data);
-};
 
+template <typename... Args>
+void LOGENTRY(std::string data, Args... args) {
+	printf(data.c_str(), args...);
+	printf("\n");
+}

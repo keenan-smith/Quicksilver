@@ -5,7 +5,7 @@ SOCKET make_listen_sock() {
 	SOCKADDR_IN addr{};
 
 	addr.sin_family = AF_INET;
-	addr.sin_port   = htons(25560);
+	addr.sin_port   = htons(server_port);
 
 	int listen_socket = socket_listen(AF_INET, SOCK_STREAM, 0);
 	if (listen_socket == INVALID_SOCKET) {
@@ -68,7 +68,7 @@ void NTAPI thread_server(void*) {
 		return;
 	}
 
-	log("Listening on port 25560.");
+	log("Listening on port %d.", server_port);
 
 	while (true) {
 		sockaddr  socket_addr{};

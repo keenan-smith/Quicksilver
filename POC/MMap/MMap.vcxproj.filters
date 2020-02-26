@@ -21,10 +21,7 @@
     <ClCompile Include="mmap.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="logger.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="utils.cpp">
+    <ClCompile Include="driver.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -36,6 +33,12 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="utils.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\RinglandDriver\shared_structs.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="driver.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

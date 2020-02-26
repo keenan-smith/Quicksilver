@@ -140,12 +140,13 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="logger.cpp" />
+    <ClCompile Include="driver.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="mmap.cpp" />
-    <ClCompile Include="utils.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\RinglandDriver\shared_structs.h" />
+    <ClInclude Include="driver.h" />
     <ClInclude Include="logger.h" />
     <ClInclude Include="mmap.h" />
     <ClInclude Include="utils.h" />
