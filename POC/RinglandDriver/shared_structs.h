@@ -7,6 +7,7 @@ enum class PacketType
 {
 	packet_copy_memory,
 	packet_get_base_address,
+	packet_echo,
 	packet_completed
 };
 
@@ -19,6 +20,11 @@ struct PacketCopyMemory
 	uint64_t src_address;
 
 	uint32_t size;
+};
+
+struct PacketEcho
+{
+	char text[512];
 };
 
 struct PacketGetBaseAddress
@@ -44,6 +50,7 @@ struct Packet
 	{
 		PacketCopyMemory	 copy_memory;
 		PacketGetBaseAddress get_base_address;
+		PacketEcho			 echo;
 		PackedCompleted		 completed;
 	} data;
 };

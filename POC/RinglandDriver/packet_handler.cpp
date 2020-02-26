@@ -1,5 +1,6 @@
 #include "packet_handler.h"
 #include "imports.h"
+#include "log.h"
 
 static uint64_t handle_copy_memory(const PacketCopyMemory& packet)
 {
@@ -48,6 +49,12 @@ static uint64_t handle_get_base_address(const PacketGetBaseAddress& packet)
 	return base_address;
 }
 
+static uint64_t handle_echo(const PacketEcho& packet) {
+	log(packet.text);
+
+	return 0x80008135;
+}
+
 uint64_t handle_incoming_packet(const Packet& packet)
 {
 	switch (packet.header.type)
@@ -57,6 +64,9 @@ uint64_t handle_incoming_packet(const Packet& packet)
 
 	case PacketType::packet_get_base_address:
 		return handle_get_base_address(packet.data.get_base_address);
+
+	case PacketType::packet_echo:
+		return handle_echo(packet.data.echo);
 
 	default:
 		break;
