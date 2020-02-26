@@ -4,12 +4,14 @@
 constexpr auto packet_magic = 0x12345568;
 constexpr auto server_ip = 0x7F000001; // 127.0.0.1
 constexpr auto server_port = 25560;
+constexpr auto close_server_magic = 0xCAFEBABE;
 
 enum class PacketType
 {
 	packet_copy_memory,
 	packet_get_base_address,
 	packet_echo,
+	packet_close_server,
 	packet_completed
 };
 
@@ -22,6 +24,11 @@ struct PacketCopyMemory
 	uint64_t src_address;
 
 	uint32_t size;
+};
+
+struct PacketCloseServer
+{
+	uint32_t magic;
 };
 
 struct PacketEcho
@@ -53,6 +60,7 @@ struct Packet
 		PacketCopyMemory	 copy_memory;
 		PacketGetBaseAddress get_base_address;
 		PacketEcho			 echo;
+		PacketCloseServer	 close_server;
 		PackedCompleted		 completed;
 	} data;
 };

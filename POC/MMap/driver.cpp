@@ -141,3 +141,19 @@ uint64_t driver::echo(const SOCKET connection, const char* text) {
 
 	return 0;
 }
+
+uint64_t driver::close_server(const SOCKET connection) {
+	Packet packet{};
+
+	packet.header.magic = packet_magic;
+	packet.header.type = PacketType::packet_close_server;
+
+	auto& data = packet.data.close_server;
+	data.magic = close_server_magic;
+
+	uint64_t result = 0;
+	if (send_packet(connection, packet, result))
+		return result;
+
+	return 0;
+}

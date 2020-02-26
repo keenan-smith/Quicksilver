@@ -14,6 +14,7 @@ namespace driver
 	uint32_t write_memory(SOCKET connection, uint32_t process_id, uintptr_t address, uintptr_t buffer, size_t size);
 	uint64_t get_process_base_address(SOCKET connection, uint32_t process_id);
 	uint64_t echo(SOCKET connection, const char* text);
+	uint64_t close_server(SOCKET connection);
 
 	template <typename T>
 	T read(const SOCKET connection, const uint32_t process_id, const uintptr_t address)

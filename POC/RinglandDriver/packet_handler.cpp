@@ -1,6 +1,7 @@
 #include "packet_handler.h"
 #include "imports.h"
 #include "log.h"
+#include "globals.h"
 
 static uint64_t handle_copy_memory(const PacketCopyMemory& packet)
 {
@@ -52,7 +53,17 @@ static uint64_t handle_get_base_address(const PacketGetBaseAddress& packet)
 static uint64_t handle_echo(const PacketEcho& packet) {
 	log(packet.text);
 
-	return 0x80008135;
+	return 0xB000B135;
+}
+
+static uint64_t handle_close_server(const PacketCloseServer& packet) {
+	log("Recieved packet to close server, shutting down.");
+
+	if (packet.magic == close_server_magic) {
+		shut_down_server = true;
+	}
+
+	return 0xB16B00B5;
 }
 
 uint64_t handle_incoming_packet(const Packet& packet)
@@ -67,6 +78,9 @@ uint64_t handle_incoming_packet(const Packet& packet)
 
 	case PacketType::packet_echo:
 		return handle_echo(packet.data.echo);
+
+	case PacketType::packet_close_server:
+		return handle_close_server(packet.data.close_server);
 
 	default:
 		break;

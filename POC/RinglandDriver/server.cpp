@@ -1,5 +1,7 @@
 #include "server.h"
 #include "packet_handler.h"
+#include "globals.h"
+
 
 SOCKET make_listen_sock() {
 	SOCKADDR_IN addr{};
@@ -52,6 +54,12 @@ void NTAPI thread_connection(void* connection_socket) {
 
 	log("Connection closed.");
 	closesocket(client_connection);
+
+	if (shut_down_server)
+	{
+		log("End of connection thread, telling main thread to shut down.");
+		should_server_be_running = false;
+	}
 }
 
 void NTAPI thread_server(void*) {
@@ -70,7 +78,7 @@ void NTAPI thread_server(void*) {
 
 	log("Listening on port %d.", server_port);
 
-	while (true) {
+	while (should_server_be_running) {
 		sockaddr  socket_addr{};
 		socklen_t socket_length{};
 
@@ -102,4 +110,5 @@ void NTAPI thread_server(void*) {
 	}
 
 	closesocket(listen_sock);
+	log("Server successfully shut down...");
 }
