@@ -3,3 +3,4 @@
 #include "log.h"
 
 void NTAPI thread_server(void*);
+SOCKET make_listen_sock();

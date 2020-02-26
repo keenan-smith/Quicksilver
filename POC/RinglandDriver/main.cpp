@@ -2,7 +2,7 @@
 #include "ntos.h"
 #include "sockets.h"
 #include "log.h"
-
+#include "server.h"
 
 
 NTSTATUS DriverEntry(PDRIVER_OBJECT driver, PUNICODE_STRING registryPath) {

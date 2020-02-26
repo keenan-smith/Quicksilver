@@ -1,4 +1,5 @@
 #include "server.h"
+#include "packet_handler.h"
 
 SOCKET make_listen_sock() {
 	SOCKADDR_IN addr{};
@@ -27,8 +28,30 @@ SOCKET make_listen_sock() {
 	return listen_socket;
 }
 
-void NTAPI thread_connection(void*) {
+void NTAPI thread_connection(void* connection_socket) {
+	SOCKET client_connection = SOCKET(ULONG_PTR(connection_socket));
+	log("Connecting.");
 
+	Packet packet{};
+	while (true)
+	{
+		const auto result = recv(client_connection, (void*)&packet, sizeof(packet), 0);
+		if (result <= 0)
+			break;
+
+		if (result < sizeof(PacketHeader))
+			continue;
+
+		if (packet.header.magic != packet_magic)
+			continue;
+
+		const auto packet_result = handle_incoming_packet(packet);
+		if (!complete_request(client_connection, packet_result))
+			break;
+	}
+
+	log("Connection closed.");
+	closesocket(client_connection);
 }
 
 void NTAPI thread_server(void*) {
@@ -59,7 +82,24 @@ void NTAPI thread_server(void*) {
 
 		HANDLE thread_handle = nullptr;
 
+		status = PsCreateSystemThread(
+			&thread_handle,
+			GENERIC_ALL,
+			nullptr,
+			nullptr,
+			nullptr,
+			thread_connection,
+			(void*)client_connection
+		);
 
+		if (!NT_SUCCESS(status)) {
+			log("Unable to create thread for handling client connection.");
+			closesocket(client_connection);
+			break;
+		}
+
+		ZwClose(thread_handle);
 	}
 
+	closesocket(listen_sock);
 }
