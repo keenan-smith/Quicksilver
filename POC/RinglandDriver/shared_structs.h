@@ -10,6 +10,7 @@ enum class PacketType
 {
 	packet_copy_memory,
 	packet_get_base_address,
+	packet_create_thread,
 	packet_echo,
 	packet_close_server,
 	packet_completed
@@ -24,6 +25,13 @@ struct PacketCopyMemory
 	uint64_t src_address;
 
 	uint32_t size;
+};
+
+struct PacketCreateThread
+{
+	uint32_t process_id;
+	uint64_t entry_point;
+	uint64_t base_address;
 };
 
 struct PacketCloseServer
@@ -57,6 +65,7 @@ struct Packet
 	PacketHeader header;
 	union
 	{
+		PacketCreateThread	 create_thread;
 		PacketCopyMemory	 copy_memory;
 		PacketGetBaseAddress get_base_address;
 		PacketEcho			 echo;

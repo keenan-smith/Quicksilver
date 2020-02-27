@@ -2,7 +2,13 @@
 #include <string>
 
 template <typename... Args>
-void LOGENTRY(std::string data, Args... args) {
+void LOG(std::string data, Args... args) {
+	printf(data.c_str(), args...);
+	printf("\n");
+}
+
+template <typename... Args>
+void LOG_ERROR(std::string data, Args... args) {
 	printf(data.c_str(), args...);
 	printf("\n");
 }

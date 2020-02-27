@@ -1,17 +1,15 @@
-#include <Windows.h>
+#include <windows.h>
+#include <stdint.h>
 
-DWORD WINAPI Test(LPVOID args) {
-    MessageBox(0, L"This is a test!", L"Test", MB_OK);
-    return TRUE;
-}
 
-BOOL WINAPI DllMain(
-    _In_ HINSTANCE hinstDLL,
-    _In_ DWORD     fdwReason,
-    _In_ LPVOID    lpvReserved
+/* Compile as x64 Release !!! */
+
+BOOL APIENTRY DllMain(HMODULE hModule,
+	DWORD  ul_reason_for_call,
+	LPVOID lpReserved
 ) {
-    if (fdwReason == DLL_PROCESS_ATTACH) {
-        CreateThread(0, 0, &Test, 0, 0, NULL);
-    }
-    return TRUE;
+
+	MessageBox(0, L"Done.", L"Injected", MB_OK | MB_ICONERROR);
 }
+
+

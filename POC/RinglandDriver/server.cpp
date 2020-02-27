@@ -2,7 +2,6 @@
 #include "packet_handler.h"
 #include "globals.h"
 
-
 SOCKET make_listen_sock() {
 	SOCKADDR_IN addr{};
 
