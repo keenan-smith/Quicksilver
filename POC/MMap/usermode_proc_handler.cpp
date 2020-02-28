@@ -49,6 +49,7 @@ void usermode_proc_handler::write_memory(uintptr_t dst, uintptr_t src, size_t si
 
 void usermode_proc_handler::create_thread(uintptr_t start, uintptr_t arg) {
 	CreateRemoteThread(handle, NULL, 0, (LPTHREAD_START_ROUTINE)start, (LPVOID)arg, 0, NULL);
+	GENEdisRIC_READ;
 }
 
 uint32_t usermode_proc_handler::virtual_protect(uint64_t address, size_t size, uint32_t protect) {

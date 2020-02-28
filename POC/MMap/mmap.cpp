@@ -55,8 +55,41 @@ bool mmap::inject() {
 		return false;
 	}
 
-	//stub compiled with nasm: https://www.nasm.us/
-	uint8_t dll_stub[] = { "\x51\x52\x55\x56\x53\x57\x41\x50\x41\x51\x41\x52\x41\x53\x41\x54\x41\x55\x41\x56\x41\x57\x48\xB8\xFF\x00\xDE\xAD\xBE\xEF\x00\xFF\x48\xBA\xFF\x00\xDE\xAD\xC0\xDE\x00\xFF\x48\x89\x10\x48\x31\xC0\x48\x31\xD2\x48\x83\xEC\x28\x48\xB9\xDE\xAD\xBE\xEF\xDE\xAD\xBE\xEF\x48\x31\xD2\x48\x83\xC2\x01\x48\xB8\xDE\xAD\xC0\xDE\xDE\xAD\xC0\xDE\xFF\xD0\x48\x83\xC4\x28\x41\x5F\x41\x5E\x41\x5D\x41\x5C\x41\x5B\x41\x5A\x41\x59\x41\x58\x5F\x5B\x5E\x5D\x5A\x59\x48\x31\xC0\xC3" };
+	//stub compiled with defuse.ca: https://defuse.ca/online-x86-assembler.htm#disassembly
+	uint8_t dll_stub[] = { 
+		0x53,
+		0x41, 0x54,
+		0x41, 0x55,
+		0x41, 0x56,
+		0x41, 0x57,
+		0x56,
+		0x57,
+		0x55,
+		0x48, 0xB8, 0xFF, 0x00, 0xDE, 0xAD, 0xBE, 0xEF, 0x00, 0xFF,
+		0x48, 0xBA, 0xFF, 0x00, 0xDE, 0xAD, 0xC0, 0xDE, 0x00, 0xFF,
+		0x48, 0x89, 0x10,
+		0x48, 0x31, 0xC0,
+		0x48, 0x31, 0xD2,
+		0x48, 0x89, 0xE5,
+		0x48, 0x83, 0xE4, 0xF0,
+		0x48, 0x83, 0xEC, 0x28,
+		0x48, 0xB9, 0xDE, 0xAD, 0xBE, 0xEF, 0xDE, 0xAD, 0xBE, 0xEF,
+		0x48, 0x31, 0xD2,
+		0x48, 0x83, 0xC2, 0x01,
+		0x48, 0xB8, 0xDE, 0xAD, 0xBE, 0xEF, 0xDE, 0xAD, 0xBE, 0xEF,
+		0xFF, 0xD0,
+		0x48, 0x89, 0xEC,
+		0x5D,
+		0x5F,
+		0x5E,
+		0x41, 0x5F,
+		0x41, 0x5E,
+		0x41, 0x5D,
+		0x41, 0x5C,
+		0x5B,
+		0x48, 0xB8, 0xFF, 0x00, 0xDE, 0xAD, 0xC0, 0xDE, 0x00, 0xFF,
+		0xFF, 0xE0
+	};
 
 	/*
 		dll_stub:
@@ -82,11 +115,15 @@ bool mmap::inject() {
 		0000002D  4831C0            xor rax,rax
 		00000030  4831D2            xor rdx,rdx
 		00000033  4883EC28          sub rsp,byte +0x28
-		00000037  48B9DEADBEEFDEAD  mov rcx,0xefbeaddeefbeadde
-				 -BEEF
+		//00000037  48B9DEADBEEFDEAD  mov rcx,0xefbeaddeefbeadde
+		//	  	   -BEEF
+									xor rcx,rcx
 		00000041  4831D2            xor rdx,rdx
-		00000044  4883C201          add rdx,byte +0x1
-		00000048  48B8DEADC0DEDEAD  mov rax,0xdec0addedec0adde
+									mov r8,0xefbeaddeefbeadde
+									mov r9,0xdec0addedec0adde
+
+		//00000044  4883C201          add rdx,byte +0x1
+		00000048  48B8DEADC0DEDEAD  mov rax,kernel32.dll<CreateThread>
 				 -C0DE
 		00000052  FFD0              call rax
 		00000054  4883C428          add rsp,byte +0x28
@@ -184,8 +221,10 @@ bool mmap::inject() {
 	uint64_t orginal_function_addr{ read_memory<uint64_t>(iat_function_ptr) };
 	LOG("IAT function pointer: 0x%p", iat_function_ptr);
 
-	*(uint64_t*)(dll_stub + 0x18) = iat_function_ptr;
-	*(uint64_t*)(dll_stub + 0x22) = orginal_function_addr;
+	*(uint64_t*)(dll_stub + 0x0E) = iat_function_ptr;
+	*(uint64_t*)(dll_stub + 0x18) = orginal_function_addr;
+	*(uint64_t*)(dll_stub + 0x62) = orginal_function_addr;
+
 	/* Save pointer and orginal function address for stub to restre it.
 	mov rax, 0xff00efbeadde00ff  ; dll_stub + 0x18 (iat_function_ptr)
 	mov rdx, 0xff00dec0adde00ff  ; dll_stub + 0x22 (orginal_function_addr)
@@ -194,14 +233,21 @@ bool mmap::inject() {
 	xor rdx, rdx
 	*/
 
-	//proc->write_memory(base, (uintptr_t)raw_data, nt_header->FileHeader.SizeOfOptionalHeader + sizeof(nt_header->FileHeader) + sizeof(nt_header->Signature));
+	proc->write_memory(base, (uintptr_t)raw_data, nt_header->FileHeader.SizeOfOptionalHeader + sizeof(nt_header->FileHeader) + sizeof(nt_header->Signature));
 
 	LOG("Mapping PE sections...");
 	map_pe_sections(base, nt_header);
 
 	uint64_t entry_point{ (uint64_t)base + nt_header->OptionalHeader.AddressOfEntryPoint };
-	*(uint64_t*)(dll_stub + 0x39) = (uint64_t)base;
-	*(uint64_t*)(dll_stub + 0x4a) = entry_point;
+	*(uint64_t*)(dll_stub + 0x36) = (uint64_t)base;
+	*(uint64_t*)(dll_stub + 0x47) = entry_point;
+
+	/*uint64_t entry_point{ (uint64_t)base + nt_header->OptionalHeader.AddressOfEntryPoint };
+	*(uint64_t*)(dll_stub + 0x3F) = (uint64_t)entry_point;
+	*(uint64_t*)(dll_stub + 0x49) = (uint64_t)base;
+	*(uint64_t*)(dll_stub + 0x53) = (uint64_t)(GetProcAddress(GetModuleHandleA("kernel32.dll"), "CreateThread"));*/
+
+
 	/* Save module_base and entry_point to call dllmain correctly
 	sub rsp, 0x28
 	mov rcx, 0xefbeaddeefbeadde ; dll_stub + 0x39 (base)
@@ -213,15 +259,15 @@ bool mmap::inject() {
 
 	LOG("Entry point: 0x%p", entry_point);
 
-	//proc->write_memory(stub_base, (uintptr_t)dll_stub, sizeof(dll_stub));
+	proc->write_memory(stub_base, (uintptr_t)dll_stub, sizeof(dll_stub));
 
-	//proc->virtual_protect(iat_function_ptr, sizeof(uint64_t), PAGE_READWRITE);
-	//proc->write_memory(iat_function_ptr, (uintptr_t)&stub_base, sizeof(uint64_t));
+	proc->virtual_protect(iat_function_ptr, sizeof(uint64_t), PAGE_READWRITE);
+	proc->write_memory(iat_function_ptr, (uintptr_t)&stub_base, sizeof(uint64_t));
 
 	LOG("Injected successfully!");
 	//proc->virtual_protect(iat_function_ptr, sizeof(uint64_t), PAGE_READONLY);
 
-	proc->create_thread((uint64_t)(base + nt_header->OptionalHeader.AddressOfEntryPoint), base);
+	//proc->create_thread((uint64_t)(base + nt_header->OptionalHeader.AddressOfEntryPoint), base);
 
 	delete[] raw_data;
 	return true;

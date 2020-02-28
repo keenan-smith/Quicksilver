@@ -150,6 +150,7 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
       <BufferSecurityCheck>false</BufferSecurityCheck>
+      <ShowIncludes>true</ShowIncludes>
     </ClCompile>
     <Link>
       <EntryPointSymbol>DriverEntry</EntryPointSymbol>

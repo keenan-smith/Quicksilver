@@ -3330,4 +3330,19 @@ NTSTATUS NTAPI MmCopyVirtualMemory
 	PSIZE_T ReturnSize
 ); 
 
+//extern "C" NTSYSAPI NTSTATUS NTAPI ZwCreateThreadEx
+//(
+//	_Out_ PHANDLE ThreadHandle,
+//	_In_ ACCESS_MASK DesiredAccess,
+//	_In_opt_ POBJECT_ATTRIBUTES ObjectAttributes,
+//	_In_ HANDLE ProcessHandle,
+//	_In_ PVOID StartRoutine,
+//	_In_opt_ PVOID Argument,
+//	_In_ ULONG CreateFlags,
+//	_In_ SIZE_T ZeroBits,
+//	_In_ SIZE_T StackSize,
+//	_In_ SIZE_T MaximumStackSize,
+//	_In_opt_ PVOID AttributeList
+//);
+
 #pragma warning(pop)

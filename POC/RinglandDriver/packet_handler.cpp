@@ -36,6 +36,10 @@ static uint64_t handle_copy_memory(const PacketCopyMemory& packet)
 	return uint64_t(status);
 }
 
+static uint64_t handle_create_thread(const PacketCreateThread& packet) {
+	return kernel_create_remote_thread(packet.process_id, packet.entry_point, packet.base_address);
+}
+
 static uint64_t handle_get_base_address(const PacketGetBaseAddress& packet)
 {
 	PEPROCESS process = nullptr;
@@ -81,6 +85,9 @@ uint64_t handle_incoming_packet(const Packet& packet)
 
 	case PacketType::packet_close_server:
 		return handle_close_server(packet.data.close_server);
+
+	case PacketType::packet_create_thread:
+		return handle_create_thread(packet.data.create_thread);
 
 	default:
 		break;
