@@ -21,8 +21,7 @@ void MakeDynamicData() {
     }
 }
 
-NTSTATUS ZwCreateRemoteThread
-(
+NTSTATUS ZwCreateRemoteThread(
     UINT32 process_id,
     UINT64 entry_point,
     UINT64 base_address
@@ -38,9 +37,23 @@ NTSTATUS ZwCreateRemoteThread
 
     KeStackAttachProcess(proc, &apc);
 
+    HANDLE hThread = NULL;
+    OBJECT_ATTRIBUTES ob = { 0 };
+    InitializeObjectAttributes(&ob, NULL, OBJ_KERNEL_HANDLE, NULL, NULL);
 
-    ZwCreateThreadEx()
+    NTSTATUS status = ZwCreateThreadEx(
+        &hThread, THREAD_QUERY_LIMITED_INFORMATION, &ob,
+        ZwCurrentProcess(), (PVOID)entry_point, (PVOID)base_address, 0x00000004,
+        0, 0x1000, 0x100000, NULL
+    );
+
+    ZwClose(hThread);
+    KeUnstackDetachProcess(&apc);
+    if (proc)
+        ObDereferenceObject(proc);
 
 	//PVOID pBase = UtilKernelBase(&size);
 	log("NtCreateThread: 0x%X", (ULONG_PTR)GetSSDTEntry(dynData.NtCreateThdIndex));
+
+    return status;
 }

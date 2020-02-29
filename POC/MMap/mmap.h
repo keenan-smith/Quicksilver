@@ -23,7 +23,7 @@ class mmap {
 public:
 	bool attach_to_process(const char* process_name);
 	bool load_dll(const char* file_name);
-	bool inject();
+	bool inject(uintptr_t& entrypoint, uintptr_t& baseaddress);
 
 	mmap(INJECTION_TYPE type);
 

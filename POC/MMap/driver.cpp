@@ -142,6 +142,24 @@ uint64_t driver::echo(const SOCKET connection, const char* text) {
 	return 0;
 }
 
+uint64_t driver::create_thread(const SOCKET connection, uint32_t pid, uintptr_t entrypoint, uintptr_t baseaddress) {
+	Packet packet{};
+
+	packet.header.magic = packet_magic;
+	packet.header.type = PacketType::packet_create_thread;
+
+	auto& data = packet.data.create_thread;
+	data.process_id = pid;
+	data.entry_point = entrypoint;
+	data.base_address = baseaddress;
+
+	uint64_t result = 0;
+	if (send_packet(connection, packet, result))
+		return result;
+
+	return 0;
+}
+
 uint64_t driver::close_server(const SOCKET connection) {
 	Packet packet{};
 

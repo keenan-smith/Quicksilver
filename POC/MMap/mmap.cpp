@@ -43,7 +43,7 @@ bool mmap::load_dll(const char* file_name) {
 	return true;
 }
 
-bool mmap::inject() {
+bool mmap::inject(uintptr_t &entrypoint, uintptr_t &baseaddress) {
 
 	if (!proc->is_attached()) {
 		LOG_ERROR("Not attached to process!");
@@ -239,8 +239,8 @@ bool mmap::inject() {
 	map_pe_sections(base, nt_header);
 
 	uint64_t entry_point{ (uint64_t)base + nt_header->OptionalHeader.AddressOfEntryPoint };
-	*(uint64_t*)(dll_stub + 0x36) = (uint64_t)base;
-	*(uint64_t*)(dll_stub + 0x47) = entry_point;
+	/**(uint64_t*)(dll_stub + 0x36) = (uint64_t)base;
+	*(uint64_t*)(dll_stub + 0x47) = entry_point;*/
 
 	/*uint64_t entry_point{ (uint64_t)base + nt_header->OptionalHeader.AddressOfEntryPoint };
 	*(uint64_t*)(dll_stub + 0x3F) = (uint64_t)entry_point;
@@ -261,11 +261,14 @@ bool mmap::inject() {
 
 	proc->write_memory(stub_base, (uintptr_t)dll_stub, sizeof(dll_stub));
 
-	proc->virtual_protect(iat_function_ptr, sizeof(uint64_t), PAGE_READWRITE);
-	proc->write_memory(iat_function_ptr, (uintptr_t)&stub_base, sizeof(uint64_t));
+	/*proc->virtual_protect(iat_function_ptr, sizeof(uint64_t), PAGE_READWRITE);
+	proc->write_memory(iat_function_ptr, (uintptr_t)&stub_base, sizeof(uint64_t));*/
 
 	LOG("Injected successfully!");
 	//proc->virtual_protect(iat_function_ptr, sizeof(uint64_t), PAGE_READONLY);
+
+	entrypoint = entry_point;
+	baseaddress = base;
 
 	//proc->create_thread((uint64_t)(base + nt_header->OptionalHeader.AddressOfEntryPoint), base);
 

@@ -12,6 +12,7 @@ namespace driver
 
 	uint32_t read_memory(SOCKET connection, uint32_t process_id, uintptr_t address, uintptr_t buffer, size_t size);
 	uint32_t write_memory(SOCKET connection, uint32_t process_id, uintptr_t address, uintptr_t buffer, size_t size);
+	uint64_t create_thread(SOCKET connection, uint32_t process_id, uintptr_t address, uintptr_t buffer);
 	uint64_t get_process_base_address(SOCKET connection, uint32_t process_id);
 	uint64_t echo(SOCKET connection, const char* text);
 	uint64_t close_server(SOCKET connection);

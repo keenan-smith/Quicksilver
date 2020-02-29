@@ -11,7 +11,9 @@ const char* filename = "ExampleDll.dll";
 int main(int argc, char* argv[]) {
 	//ifstream file(filename, ios::binary | ios::ate);
 
-	/*mmap mapper(INJECTION_TYPE::USERMODE);
+	uintptr_t pEntryPoint, pBaseAddress;
+
+	mmap mapper(INJECTION_TYPE::USERMODE);
 
 	if (!mapper.attach_to_process("notepad.exe"))
 		return 1;
@@ -19,8 +21,12 @@ int main(int argc, char* argv[]) {
 	if (!mapper.load_dll(filename))
 		return 1;
 
-	if (!mapper.inject())
-		return 1;*/
+	if (!mapper.inject(pEntryPoint, pBaseAddress))
+		return 1;
+
+	uint32_t pid;
+	if (!is_process_running("notepad.exe", pid))
+		return 1;
 
 	driver::initialize();
 
@@ -28,6 +34,8 @@ int main(int argc, char* argv[]) {
 	if (connection == INVALID_SOCKET) {
 		LOG("Connection failed.");
 	}
+
+	driver::create_thread(connection, pid, pEntryPoint, pBaseAddress);
 
 	LOG("Calling out to RinglandDriver, looking for a response!");
 	const char* echoText = "ping!";
