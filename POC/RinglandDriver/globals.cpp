@@ -1,5 +1,6 @@
 #include "globals.h"
-#include "ntos.h"
+#include "krnlhelper.h"
+#include "log.h"
 
 #define GENERIC_READ                     (0x80000000L)
 #define GENERIC_WRITE                    (0x40000000L)
@@ -9,22 +10,37 @@
 bool should_server_be_running = true;
 bool shut_down_server = false;
 
-#pragma warning(push)
-unsigned long long kernel_create_remote_thread(unsigned int pid, unsigned long long start, unsigned long long arg) {
-	PEPROCESS dest_proc = nullptr;
+void MakeDynamicData() {
+    NTSTATUS status = STATUS_SUCCESS;
+    status = InitDynamicData(&dynData);
 
-	if (!NT_SUCCESS(PsLookupProcessByProcessId(HANDLE(pid), &dest_proc)))
-	{
-		return unsigned long long(STATUS_INVALID_CID);
-	}
-
-	KeAttachProcess(dest_proc);
-
-	HANDLE ThreadHandle = nullptr;
-	//ZwCreateThreadEx(&ThreadHandle, GENERIC_ALL, NULL, NtCurrentProcess(), (PVOID)start, (PVOID)arg, FALSE, NULL, NULL, NULL, NULL);
-
-	//CreateRemoteThread(handle, NULL, 0, (LPTHREAD_START_ROUTINE)start, (LPVOID)arg, 0, NULL);
-
-	return 0xA11C13A8;
+    if (!NT_SUCCESS(status))
+    {
+        if (status == STATUS_NOT_SUPPORTED)
+            log("Unsupported OS version. Aborting.");
+    }
 }
-#pragma warning(pop)
+
+NTSTATUS ZwCreateRemoteThread
+(
+    UINT32 process_id,
+    UINT64 entry_point,
+    UINT64 base_address
+)
+{
+    PEPROCESS proc = nullptr;
+    KAPC_STATE apc;
+
+    if (!NT_SUCCESS(PsLookupProcessByProcessId(HANDLE(process_id), &proc)))
+    {
+        return STATUS_INVALID_CID;
+    }
+
+    KeStackAttachProcess(proc, &apc);
+
+
+    ZwCreateThreadEx()
+
+	//PVOID pBase = UtilKernelBase(&size);
+	log("NtCreateThread: 0x%X", (ULONG_PTR)GetSSDTEntry(dynData.NtCreateThdIndex));
+}

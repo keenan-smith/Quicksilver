@@ -1128,7 +1128,7 @@ NTSTATUS NTAPI MmCopyVirtualMemory
 	PSIZE_T ReturnSize
 );
 
-NTSTATUS ZwQuerySystemInformation(ULONG InfoClass, PVOID Buffer, ULONG Length, PULONG ReturnLength);
+extern "C" NTSTATUS ZwQuerySystemInformation(ULONG InfoClass, PVOID Buffer, ULONG Length, PULONG ReturnLength);
 LPSTR PsGetProcessImageFileName(PEPROCESS Process);
 
 

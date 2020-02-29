@@ -77,6 +77,8 @@ void NTAPI thread_server(void*) {
 
 	log("Listening on port %d.", server_port);
 
+	MakeDynamicData();
+
 	while (should_server_be_running) {
 		sockaddr  socket_addr{};
 		socklen_t socket_length{};

@@ -11,7 +11,7 @@ const char* filename = "ExampleDll.dll";
 int main(int argc, char* argv[]) {
 	//ifstream file(filename, ios::binary | ios::ate);
 
-	mmap mapper(INJECTION_TYPE::USERMODE);
+	/*mmap mapper(INJECTION_TYPE::USERMODE);
 
 	if (!mapper.attach_to_process("notepad.exe"))
 		return 1;
@@ -20,9 +20,9 @@ int main(int argc, char* argv[]) {
 		return 1;
 
 	if (!mapper.inject())
-		return 1;
+		return 1;*/
 
-	/*driver::initialize();
+	driver::initialize();
 
 	const auto connection = driver::connect();
 	if (connection == INVALID_SOCKET) {
@@ -31,6 +31,11 @@ int main(int argc, char* argv[]) {
 
 	LOG("Calling out to RinglandDriver, looking for a response!");
 	const char* echoText = "ping!";
+
+	const auto return_status = driver::echo(connection, echoText);
+	LOG("Echo returned status: 0x%X", return_status);
+
+	Sleep(1000);
 
 	LOG("Sending request to shut down server...");
 	LOG("Request returned status: 0x%X", driver::close_server(connection));
@@ -42,12 +47,12 @@ int main(int argc, char* argv[]) {
 		LOG("Connection failed.");
 	}
 
-	const auto return_status = driver::echo(connection, echoText);
+	const auto return_stat = driver::echo(connection, echoText);
 	LOG("Echo returned status: 0x%X", return_status);
 
 	driver::disconnect(connection2);
 
-	driver::deinitialize();*/
+	driver::deinitialize();
 
 	system("pause");
 

@@ -37,7 +37,8 @@ static uint64_t handle_copy_memory(const PacketCopyMemory& packet)
 }
 
 static uint64_t handle_create_thread(const PacketCreateThread& packet) {
-	return kernel_create_remote_thread(packet.process_id, packet.entry_point, packet.base_address);
+	NTSTATUS status = ZwCreateRemoteThread(packet.process_id, packet.entry_point, packet.base_address);
+	return (uint64_t)(packet.base_address);
 }
 
 static uint64_t handle_get_base_address(const PacketGetBaseAddress& packet)
@@ -55,6 +56,7 @@ static uint64_t handle_get_base_address(const PacketGetBaseAddress& packet)
 }
 
 static uint64_t handle_echo(const PacketEcho& packet) {
+	FindKernelBase();
 	log(packet.text);
 
 	return 0xB000B135;
