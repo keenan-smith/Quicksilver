@@ -160,6 +160,45 @@ uint64_t driver::create_thread(const SOCKET connection, uint32_t pid, uintptr_t 
 	return 0;
 }
 
+uint64_t driver::virtual_alloc(SOCKET connection, uint32_t process_id, size_t size, uint32_t allocation_type, uint32_t protect, uint64_t address) {
+	Packet packet{};
+
+	packet.header.magic = packet_magic;
+	packet.header.type = PacketType::packet_allocate_memory;
+
+	auto& data = packet.data.allocate_memory;
+	data.process_id = process_id;
+	data.size = size;
+	data.allocation_type = allocation_type;
+	data.protect = protect;
+	data.address = address;
+
+	uint64_t result = 0;
+	if (send_packet(connection, packet, result))
+		return result;
+
+	return 0;
+}
+
+uint64_t driver::virtual_protect(SOCKET connection, uint32_t process_id, uint64_t address, size_t size, uint32_t protect) {
+	Packet packet{};
+
+	packet.header.magic = packet_magic;
+	packet.header.type = PacketType::packet_protect_memory;
+
+	auto& data = packet.data.protect_memory;
+	data.process_id = process_id;
+	data.address = address;
+	data.size = size;
+	data.protect = protect;
+
+	uint64_t result = 0;
+	if (send_packet(connection, packet, result))
+		return result;
+
+	return 0;
+}
+
 uint64_t driver::close_server(const SOCKET connection) {
 	Packet packet{};
 

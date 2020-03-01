@@ -3,6 +3,8 @@
 #include "log.h"
 #include "globals.h"
 
+
+
 static uint64_t handle_copy_memory(const PacketCopyMemory& packet)
 {
 	PEPROCESS dest_process = nullptr;
@@ -55,6 +57,18 @@ static uint64_t handle_get_base_address(const PacketGetBaseAddress& packet)
 	return base_address;
 }
 
+static uint64_t handle_protect_memory(const PacketProtectMemory& packet) {
+	NTSTATUS status = ZwVirtualProtect(packet.process_id, packet.address, packet.size, packet.protect);
+	return (uint64_t)(status);
+}
+
+static uint64_t handle_allocate_memory(const PacketAllocateMemory& packet) {
+	uint64_t size = packet.size;
+	uint64_t address = packet.address;
+	NTSTATUS status = ZwVirtualAlloc(packet.process_id, size, packet.allocation_type, packet.protect, address);
+	return address;
+}
+
 static uint64_t handle_echo(const PacketEcho& packet) {
 	log(packet.text);
 
@@ -89,6 +103,13 @@ uint64_t handle_incoming_packet(const Packet& packet)
 
 	case PacketType::packet_create_thread:
 		return handle_create_thread(packet.data.create_thread);
+
+	case PacketType::packet_allocate_memory:
+		return handle_allocate_memory(packet.data.allocate_memory);
+
+	case PacketType::packet_protect_memory:
+		return handle_protect_memory(packet.data.protect_memory);
+
 
 	default:
 		break;

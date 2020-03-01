@@ -707,6 +707,15 @@ ZwCreateThreadEx(
     IN PNT_PROC_THREAD_ATTRIBUTE_LIST AttributeList
 );
 
+extern "C" NTSTATUS ZwAllocateVirtualMemory(
+    _In_    HANDLE    ProcessHandle,
+    _Inout_ PVOID* BaseAddress,
+    _In_    ULONG_PTR ZeroBits,
+    _Inout_ PSIZE_T   RegionSize,
+    _In_    ULONG     AllocationType,
+    _In_    ULONG     Protect
+);
+
 typedef NTSTATUS(NTAPI* fnNtCreateThreadEx)
 (
     OUT PHANDLE hThread,

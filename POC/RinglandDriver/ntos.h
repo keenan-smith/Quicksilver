@@ -2132,10 +2132,7 @@ ZwUnlockVirtualMemory(
 	__inout PSIZE_T RegionSize,
 	__in ULONG MapType
 );
-NTSYSAPI
-NTSTATUS
-NTAPI
-ZwProtectVirtualMemory(
+extern "C" NTSYSAPI NTSTATUS NTAPI ZwProtectVirtualMemory(
 	__in HANDLE ProcessHandle,
 	__inout PVOID* BaseAddress,
 	__inout PSIZE_T RegionSize,

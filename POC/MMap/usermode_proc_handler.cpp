@@ -13,9 +13,9 @@ bool usermode_proc_handler::attach(const char* proc_name) {
 	while (!is_process_running(proc_name, pid))
 		std::this_thread::sleep_for(std::chrono::seconds(1));
 
-	handle = OpenProcess(PROCESS_VM_OPERATION | PROCESS_VM_READ | PROCESS_VM_WRITE, FALSE, pid);
+	//handle = OpenProcess(PROCESS_VM_OPERATION | PROCESS_VM_READ | PROCESS_VM_WRITE, FALSE, pid);
 
-	return handle;
+	return 0;
 }
 
 uint64_t usermode_proc_handler::get_module_base(const std::string& module_name) {
@@ -36,7 +36,7 @@ uint64_t usermode_proc_handler::get_module_base(const std::string& module_name) 
 	CloseHandle(snapshot);
 	return NULL;
 }
-
+	
 void usermode_proc_handler::read_memory(uintptr_t src, uintptr_t dst, size_t size) {
 	if (driver::read_memory(sConnection, pid, src, dst, size) != 0)
 		LOG("Error reading memory!");

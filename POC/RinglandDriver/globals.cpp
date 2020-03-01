@@ -21,12 +21,58 @@ void MakeDynamicData() {
     }
 }
 
+NTSTATUS ZwVirtualProtect(
+    UINT32 process_id,
+    UINT64 address,
+    UINT64 size,
+    UINT32 protect
+) {
+    PEPROCESS proc = nullptr;
+    ULONG oldProt;
+    KAPC_STATE apc;
+
+    if (!NT_SUCCESS(PsLookupProcessByProcessId(HANDLE(process_id), &proc)))
+    {
+        return STATUS_INVALID_CID;
+    }
+
+    KeStackAttachProcess(proc, &apc);
+    NTSTATUS status = ZwProtectVirtualMemory(ZwCurrentProcess(), (PVOID*)&address, (PSIZE_T)&size, protect, &oldProt);
+    KeUnstackDetachProcess(&apc);
+    if (proc)
+        ObDereferenceObject(proc);
+    return status;
+}
+
+NTSTATUS ZwVirtualAlloc(
+    UINT32 process_id,
+    UINT64 &size,
+    UINT32 allocation_type,
+    UINT32 protect,
+    UINT64 &address
+) {
+    PEPROCESS proc = nullptr;
+    ULONG oldProt;
+    KAPC_STATE apc;
+
+    if (!NT_SUCCESS(PsLookupProcessByProcessId(HANDLE(process_id), &proc)))
+    {
+        return STATUS_INVALID_CID;
+    }
+
+    KeStackAttachProcess(proc, &apc);
+    NTSTATUS status = ZwAllocateVirtualMemory(ZwCurrentProcess(), (PVOID*)&address, 0, (PSIZE_T)&size, allocation_type, protect);
+    KeUnstackDetachProcess(&apc);
+    if (proc)
+        ObDereferenceObject(proc);
+    return status;
+}
+
 NTSTATUS ZwCreateRemoteThread(
     UINT32 process_id,
     UINT64 entry_point,
     UINT64 base_address
-)
-{
+){
     PEPROCESS proc = nullptr;
     KAPC_STATE apc;
 

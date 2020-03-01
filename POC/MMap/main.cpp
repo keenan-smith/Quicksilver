@@ -22,7 +22,7 @@ int main(int argc, char* argv[]) {
 		LOG("Connection failed.");
 	}
 
-	if (!mapper.attach_to_process("notepad.exe"))
+	if (!mapper.attach_to_process("unturned.exe"))
 		return 1;
 
 	if (!mapper.load_dll(filename))
@@ -32,7 +32,7 @@ int main(int argc, char* argv[]) {
 		return 1;
 
 	uint32_t pid;
-	if (!is_process_running("notepad.exe", pid))
+	if (!is_process_running("unturned.exe", pid))
 		return 1;
 
 	driver::create_thread(sConnection, pid, pEntryPoint, pBaseAddress);
