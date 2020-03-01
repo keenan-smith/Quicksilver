@@ -141,6 +141,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="driver.cpp" />
+    <ClCompile Include="drvhelper.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="mmap.cpp" />
     <ClCompile Include="usermode_proc_handler.cpp" />
@@ -149,6 +150,7 @@
   <ItemGroup>
     <ClInclude Include="..\RinglandDriver\shared_structs.h" />
     <ClInclude Include="driver.h" />
+    <ClInclude Include="drvhelper.h" />
     <ClInclude Include="logger.h" />
     <ClInclude Include="mmap.h" />
     <ClInclude Include="process_handler.h" />

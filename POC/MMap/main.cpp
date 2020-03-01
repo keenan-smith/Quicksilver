@@ -1,4 +1,4 @@
-#include "driver.h"
+#include "drvhelper.h"
 #include <Windows.h>
 #include <fstream>
 #include "logger.h"
@@ -15,6 +15,13 @@ int main(int argc, char* argv[]) {
 
 	mmap mapper(INJECTION_TYPE::USERMODE);
 
+	driver::initialize();
+
+	sConnection = driver::connect();
+	if (sConnection == INVALID_SOCKET) {
+		LOG("Connection failed.");
+	}
+
 	if (!mapper.attach_to_process("notepad.exe"))
 		return 1;
 
@@ -28,34 +35,27 @@ int main(int argc, char* argv[]) {
 	if (!is_process_running("notepad.exe", pid))
 		return 1;
 
-	driver::initialize();
-
-	const auto connection = driver::connect();
-	if (connection == INVALID_SOCKET) {
-		LOG("Connection failed.");
-	}
-
-	driver::create_thread(connection, pid, pEntryPoint, pBaseAddress);
+	driver::create_thread(sConnection, pid, pEntryPoint, pBaseAddress);
 
 	LOG("Calling out to RinglandDriver, looking for a response!");
 	const char* echoText = "ping!";
 
-	const auto return_status = driver::echo(connection, echoText);
+	const auto return_status = driver::echo(sConnection, echoText);
 	LOG("Echo returned status: 0x%X", return_status);
 
 	Sleep(1000);
 
 	LOG("Sending request to shut down server...");
-	LOG("Request returned status: 0x%X", driver::close_server(connection));
+	LOG("Request returned status: 0x%X", driver::close_server(sConnection));
 
-	driver::disconnect(connection);
+	driver::disconnect(sConnection);
 
 	const auto connection2 = driver::connect();
-	if (connection == INVALID_SOCKET) {
+	if (connection2 == INVALID_SOCKET) {
 		LOG("Connection failed.");
 	}
 
-	const auto return_stat = driver::echo(connection, echoText);
+	const auto return_stat = driver::echo(connection2, echoText);
 	LOG("Echo returned status: 0x%X", return_status);
 
 	driver::disconnect(connection2);

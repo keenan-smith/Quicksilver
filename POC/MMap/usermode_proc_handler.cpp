@@ -1,3 +1,4 @@
+#include "drvhelper.h"
 #include "usermode_proc_handler.h"
 #include "logger.h"
 
@@ -37,14 +38,20 @@ uint64_t usermode_proc_handler::get_module_base(const std::string& module_name) 
 }
 
 void usermode_proc_handler::read_memory(uintptr_t src, uintptr_t dst, size_t size) {
-	if (!ReadProcessMemory(handle, (LPCVOID)src, (LPVOID)dst, size, NULL))
+	if (driver::read_memory(sConnection, pid, src, dst, size) != 0)
 		LOG("Error reading memory!");
+
+	/*if (!ReadProcessMemory(handle, (LPCVOID)src, (LPVOID)dst, size, NULL))
+		LOG("Error reading memory!");*/
 		
 }
 
 void usermode_proc_handler::write_memory(uintptr_t dst, uintptr_t src, size_t size) {
-	if (!WriteProcessMemory(handle, (LPVOID)dst, (LPVOID)src, size, NULL))
+	if (driver::write_memory(sConnection, pid, dst, src, size) != 0)
 		LOG("Error writing memory!");
+
+	/*if (!WriteProcessMemory(handle, (LPVOID)dst, (LPVOID)src, size, NULL))
+		LOG("Error writing memory!");*/
 }
 
 void usermode_proc_handler::create_thread(uintptr_t start, uintptr_t arg) {
