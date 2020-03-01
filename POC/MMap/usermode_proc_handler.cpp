@@ -58,7 +58,7 @@ void usermode_proc_handler::create_thread(uintptr_t start, uintptr_t arg) {
 	CreateRemoteThread(handle, NULL, 0, (LPTHREAD_START_ROUTINE)start, (LPVOID)arg, 0, NULL);
 }
 
-uint32_t usermode_proc_handler::virtual_protect(uint64_t address, size_t size, uint32_t protect) {
+uint32_t usermode_proc_handler::virtual_protect(uint64_t address, size_t size, uint32_t protect) { //who cares about old protect anyways hahahahhahahahaaaaaa
 	DWORD old_protect{};
 	VirtualProtectEx(handle, (LPVOID)address, size, protect, &old_protect);
 	return old_protect;
