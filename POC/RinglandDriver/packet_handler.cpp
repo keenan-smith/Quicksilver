@@ -57,6 +57,10 @@ static uint64_t handle_get_base_address(const PacketGetBaseAddress& packet)
 	return base_address;
 }
 
+static uint64_t handle_get_module_handle(const PacketGetModuleHandle& packet) {
+	return ZwGetModuleHandle(packet.process_id, packet.module_name);
+}
+
 static uint64_t handle_protect_memory(const PacketProtectMemory& packet) {
 	NTSTATUS status = ZwVirtualProtect(packet.process_id, packet.address, packet.size, packet.protect);
 	return (uint64_t)(status);

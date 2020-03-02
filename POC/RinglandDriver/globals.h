@@ -23,4 +23,9 @@ long ZwVirtualProtect(
     unsigned int protect
 );
 
+unsigned long long ZwGetModuleHandle(
+    unsigned int process_id,
+    const char* module_name
+);
+
 void MakeDynamicData();

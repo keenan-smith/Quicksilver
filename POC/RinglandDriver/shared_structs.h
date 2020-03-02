@@ -12,10 +12,17 @@ enum class PacketType
 	packet_allocate_memory,
 	packet_protect_memory,
 	packet_get_base_address,
+	packet_get_module_handle,
 	packet_create_thread,
 	packet_echo,
 	packet_close_server,
 	packet_completed
+};
+
+struct PacketGetModuleHandle
+{
+	uint32_t process_id;
+	char module_name[260];
 };
 
 struct PacketProtectMemory
@@ -84,13 +91,14 @@ struct Packet
 	PacketHeader header;
 	union
 	{
-		PacketProtectMemory	 protect_memory;
-		PacketAllocateMemory allocate_memory;
-		PacketCreateThread	 create_thread;
-		PacketCopyMemory	 copy_memory;
-		PacketGetBaseAddress get_base_address;
-		PacketEcho			 echo;
-		PacketCloseServer	 close_server;
-		PackedCompleted		 completed;
+		PacketGetModuleHandle	get_module_handle;
+		PacketProtectMemory		protect_memory;
+		PacketAllocateMemory	allocate_memory;
+		PacketCreateThread		create_thread;
+		PacketCopyMemory		copy_memory;
+		PacketGetBaseAddress	get_base_address;
+		PacketEcho				echo;
+		PacketCloseServer		close_server;
+		PackedCompleted			completed;
 	} data;
 };

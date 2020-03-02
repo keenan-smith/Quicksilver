@@ -124,9 +124,7 @@ PsGetProcessInheritedFromUniqueProcessId(
 	IN PEPROCESS Process
 );
 
-NTKERNELAPI
-PPEB
-PsGetProcessPeb(
+extern "C" NTKERNELAPI PPEB PsGetProcessPeb(
 	IN PEPROCESS Process
 );
 

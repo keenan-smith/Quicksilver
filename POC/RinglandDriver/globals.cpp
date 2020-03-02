@@ -68,6 +68,48 @@ NTSTATUS ZwVirtualAlloc(
     return status;
 }
 
+UINT64 ZwGetModuleHandle(
+    UINT32 process_id,
+    const char* module_name
+) {
+    PEPROCESS process = nullptr;
+    KAPC_STATE apc;
+    NTSTATUS  status = PsLookupProcessByProcessId(HANDLE(process_id), &process);
+    UINT64 base = 0;
+
+    if (!NT_SUCCESS(status))
+        return 0;
+
+    KeStackAttachProcess(process, &apc);
+
+    PPEB peb = PsGetProcessPeb(process);
+    if (!peb)
+        goto end;
+
+    if (!peb->Ldr || !peb->Ldr->Initialized)
+        goto end;
+
+    ANSI_STRING as;
+    UNICODE_STRING module_name_unicode;
+    RtlInitAnsiString(&as, module_name);
+    RtlAnsiStringToUnicodeString(&module_name_unicode, &as, TRUE);
+    for (PLIST_ENTRY list = peb->Ldr->InLoadOrderModuleList.Flink;
+        list != &peb->Ldr->InLoadOrderModuleList;
+        list = list->Flink) {
+        PLDR_DATA_TABLE_ENTRY entry = CONTAINING_RECORD(list, LDR_DATA_TABLE_ENTRY, InLoadOrderLinks);
+        if (RtlCompareUnicodeString(&entry->BaseDllName, &module_name_unicode, TRUE) == 0) {
+            base = (UINT64)entry->DllBase;
+            goto end;
+        }
+    }
+
+end:
+    KeUnstackDetachProcess(&apc);
+    if (process)
+        ObDereferenceObject(process);
+    return base;
+}
+
 NTSTATUS ZwCreateRemoteThread(
     UINT32 process_id,
     UINT64 entry_point,
