@@ -7,6 +7,7 @@
 using namespace std;
 
 const char* filename = "ExampleDll.dll";
+const char* procname = "Unturned.exe";
 
 int main(int argc, char* argv[]) {
 	//ifstream file(filename, ios::binary | ios::ate);
@@ -22,18 +23,34 @@ int main(int argc, char* argv[]) {
 		LOG("Connection failed.");
 	}
 
-	if (!mapper.attach_to_process("notepad.exe"))
-		return 1;
+	LOG("Connected to driver, Attaching to process : " + string(procname));
 
-	if (!mapper.load_dll(filename))
+	if (!mapper.attach_to_process(procname)) {
+		driver::disconnect(sConnection);
 		return 1;
+	}
 
-	if (!mapper.inject(pEntryPoint, pBaseAddress))
+	LOG("Attached to process, loading dll.");
+
+	if (!mapper.load_dll(filename)) {
+		driver::disconnect(sConnection);
 		return 1;
+	}
+
+	LOG("Loaded dll, injecting into process.");
+
+	if (!mapper.inject(pEntryPoint, pBaseAddress)) {
+		driver::disconnect(sConnection);
+		return 1;
+	}
+
+	LOG("Injected dll, calling entrypoint.");
 
 	uint32_t pid;
-	if (!is_process_running("notepad.exe", pid))
+	if (!is_process_running(procname, pid)) {
+		driver::disconnect(sConnection);
 		return 1;
+	}
 
 	driver::create_thread(sConnection, pid, pEntryPoint, pBaseAddress);
 

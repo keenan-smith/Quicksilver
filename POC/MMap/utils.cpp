@@ -1,4 +1,5 @@
 #include "utils.h"
+#include "logger.h"
 
 template< typename T >
 std::string int_to_hex(T i)
@@ -38,6 +39,7 @@ std::string int_to_hex(T i)
 }
 
 bool is_process_running(const char* process_name, uint32_t& pid) {
+    LOG("Looking for process: " + std::string(process_name));
     PROCESSENTRY32 process_entry{};
     process_entry.dwSize = sizeof(PROCESSENTRY32);
     pid = 0;
@@ -46,6 +48,7 @@ bool is_process_running(const char* process_name, uint32_t& pid) {
         return false;
     if (Process32First(snapshot, &process_entry)) {
         do {
+            //LOG("Current process: " + std::string(process_entry.szExeFile));
             if (!strcmp(process_name, process_entry.szExeFile)) {
                 pid = process_entry.th32ProcessID;
                 CloseHandle(snapshot);

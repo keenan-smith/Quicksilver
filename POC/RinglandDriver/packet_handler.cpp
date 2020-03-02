@@ -72,7 +72,7 @@ static uint64_t handle_allocate_memory(const PacketAllocateMemory& packet) {
 static uint64_t handle_echo(const PacketEcho& packet) {
 	log(packet.text);
 
-	return 0xB000B135;
+	return 0x1;
 }
 
 static uint64_t handle_close_server(const PacketCloseServer& packet) {
@@ -82,7 +82,7 @@ static uint64_t handle_close_server(const PacketCloseServer& packet) {
 		shut_down_server = true;
 	}
 
-	return 0xB16B00B5;
+	return 0x1;
 }
 
 uint64_t handle_incoming_packet(const Packet& packet)

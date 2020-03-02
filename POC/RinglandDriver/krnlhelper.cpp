@@ -365,8 +365,6 @@ PSYSTEM_SERVICE_DESCRIPTOR_TABLE UtilSSDTBase()
     PIMAGE_SECTION_HEADER pFirstSec = (PIMAGE_SECTION_HEADER)(pHdr + 1);
     for (PIMAGE_SECTION_HEADER pSec = pFirstSec; pSec < pFirstSec + pHdr->FileHeader.NumberOfSections; pSec++)
     {
-        // Non-paged, non-discardable, readable sections
-        // Probably still not fool-proof enough...
         if (pSec->Characteristics & IMAGE_SCN_MEM_NOT_PAGED &&
             pSec->Characteristics & IMAGE_SCN_MEM_EXECUTE &&
             !(pSec->Characteristics & IMAGE_SCN_MEM_DISCARDABLE) &&
@@ -381,7 +379,6 @@ PSYSTEM_SERVICE_DESCRIPTOR_TABLE UtilSSDTBase()
             if (NT_SUCCESS(status))
             {
                 g_SSDT = (PSYSTEM_SERVICE_DESCRIPTOR_TABLE)((PUCHAR)pFound + *(PULONG)((PUCHAR)pFound + 3) + 7);
-                //DPRINT( "BlackBone: %s: KeSystemServiceDescriptorTable = 0x%p\n", CPU_NUM, __FUNCTION__, g_SSDT );
                 return g_SSDT;
             }
             else
