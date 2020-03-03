@@ -6,7 +6,7 @@
 
 using namespace std;
 
-const char* filename = "ExampleDll.dll";
+const char* filename = "MonoLoader.dll";
 const char* procname = "Unturned.exe";
 
 int main(int argc, char* argv[]) {
