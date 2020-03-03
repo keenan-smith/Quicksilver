@@ -16,6 +16,7 @@ namespace driver
 	uint64_t virtual_protect(SOCKET connection, uint32_t process_id, uint64_t address, size_t size, uint32_t protect);
 	uint64_t virtual_alloc(SOCKET connection, uint32_t process_id, size_t size, uint32_t allocation_type, uint32_t protect, uint64_t address);
 	uint64_t get_process_base_address(SOCKET connection, uint32_t process_id);
+	uint64_t get_module_handle(SOCKET connection, uint32_t process_id, const char* module_name);
 	uint64_t echo(SOCKET connection, const char* text);
 	uint64_t close_server(SOCKET connection);
 

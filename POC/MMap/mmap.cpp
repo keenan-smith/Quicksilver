@@ -55,96 +55,6 @@ bool mmap::inject(uintptr_t &entrypoint, uintptr_t &baseaddress) {
 		return false;
 	}
 
-	//stub compiled with defuse.ca: https://defuse.ca/online-x86-assembler.htm#disassembly
-	uint8_t dll_stub[] = { 
-		0x53,
-		0x41, 0x54,
-		0x41, 0x55,
-		0x41, 0x56,
-		0x41, 0x57,
-		0x56,
-		0x57,
-		0x55,
-		0x48, 0xB8, 0xFF, 0x00, 0xDE, 0xAD, 0xBE, 0xEF, 0x00, 0xFF,
-		0x48, 0xBA, 0xFF, 0x00, 0xDE, 0xAD, 0xC0, 0xDE, 0x00, 0xFF,
-		0x48, 0x89, 0x10,
-		0x48, 0x31, 0xC0,
-		0x48, 0x31, 0xD2,
-		0x48, 0x89, 0xE5,
-		0x48, 0x83, 0xE4, 0xF0,
-		0x48, 0x83, 0xEC, 0x28,
-		0x48, 0xB9, 0xDE, 0xAD, 0xBE, 0xEF, 0xDE, 0xAD, 0xBE, 0xEF,
-		0x48, 0x31, 0xD2,
-		0x48, 0x83, 0xC2, 0x01,
-		0x48, 0xB8, 0xDE, 0xAD, 0xBE, 0xEF, 0xDE, 0xAD, 0xBE, 0xEF,
-		0xFF, 0xD0,
-		0x48, 0x89, 0xEC,
-		0x5D,
-		0x5F,
-		0x5E,
-		0x41, 0x5F,
-		0x41, 0x5E,
-		0x41, 0x5D,
-		0x41, 0x5C,
-		0x5B,
-		0x48, 0xB8, 0xFF, 0x00, 0xDE, 0xAD, 0xC0, 0xDE, 0x00, 0xFF,
-		0xFF, 0xE0
-	};
-
-	/*
-		dll_stub:
-		00000000  51                push rcx
-		00000001  52                push rdx
-		00000002  55                push rbp
-		00000003  56                push rsi
-		00000004  53                push rbx
-		00000005  57                push rdi
-		00000006  4150              push r8
-		00000008  4151              push r9
-		0000000A  4152              push r10
-		0000000C  4153              push r11
-		0000000E  4154              push r12
-		00000010  4155              push r13
-		00000012  4156              push r14
-		00000014  4157              push r15
-		00000016  48B8FF00DEADBEEF  mov rax,0xff00efbeadde00ff
-				 -00FF
-		00000020  48BAFF00DEADC0DE  mov rdx,0xff00dec0adde00ff
-				 -00FF
-		0000002A  488910            mov [rax],rdx
-		0000002D  4831C0            xor rax,rax
-		00000030  4831D2            xor rdx,rdx
-		00000033  4883EC28          sub rsp,byte +0x28
-		//00000037  48B9DEADBEEFDEAD  mov rcx,0xefbeaddeefbeadde
-		//	  	   -BEEF
-									xor rcx,rcx
-		00000041  4831D2            xor rdx,rdx
-									mov r8,0xefbeaddeefbeadde
-									mov r9,0xdec0addedec0adde
-
-		//00000044  4883C201          add rdx,byte +0x1
-		00000048  48B8DEADC0DEDEAD  mov rax,kernel32.dll<CreateThread>
-				 -C0DE
-		00000052  FFD0              call rax
-		00000054  4883C428          add rsp,byte +0x28
-		00000058  415F              pop r15
-		0000005A  415E              pop r14
-		0000005C  415D              pop r13
-		0000005E  415C              pop r12
-		00000060  415B              pop r11
-		00000062  415A              pop r10
-		00000064  4159              pop r9
-		00000066  4158              pop r8
-		00000068  5F                pop rdi
-		00000069  5B                pop rbx
-		0000006A  5E                pop rsi
-		0000006B  5D                pop rbp
-		0000006C  5A                pop rdx
-		0000006D  59                pop rcx
-		0000006E  4831C0            xor rax,rax
-		00000071  C3                ret
-	*/
-
 	IMAGE_DOS_HEADER* dos_header{ (IMAGE_DOS_HEADER*)raw_data };
 
 	if (dos_header->e_magic != IMAGE_DOS_SIGNATURE) {
@@ -169,17 +79,6 @@ bool mmap::inject(uintptr_t &entrypoint, uintptr_t &baseaddress) {
 	}
 
 	LOG("Image base: 0x%p", base);
-
-	uint64_t stub_base{ proc->virtual_alloc(sizeof(dll_stub),
-											MEM_COMMIT | MEM_RESERVE,
-											PAGE_EXECUTE_READWRITE) };
-
-	if (!stub_base) {
-		LOG_ERROR("Unable to allocate memory for the stub!");
-		return false;
-	}
-
-	LOG("Stub base: 0x%p", stub_base);
 
 	PIMAGE_IMPORT_DESCRIPTOR import_descriptor{ (PIMAGE_IMPORT_DESCRIPTOR)get_ptr_from_rva(
 												(uint64_t)(nt_header->OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_IMPORT].VirtualAddress),
@@ -211,66 +110,19 @@ bool mmap::inject(uintptr_t &entrypoint, uintptr_t &baseaddress) {
 		return false;
 	}
 
-	uint64_t iat_function_ptr{ imports["TranslateMessage"] };
-	if (!iat_function_ptr) {
-		LOG_ERROR("Cannot find import");
-		return false;
-	}
-
-	LOG("Reading IAT function pointer");
-	uint64_t orginal_function_addr{ read_memory<uint64_t>(iat_function_ptr) };
-	LOG("IAT function pointer: 0x%p", iat_function_ptr);
-
-	*(uint64_t*)(dll_stub + 0x0E) = iat_function_ptr;
-	*(uint64_t*)(dll_stub + 0x18) = orginal_function_addr;
-	*(uint64_t*)(dll_stub + 0x62) = orginal_function_addr;
-
-	/* Save pointer and orginal function address for stub to restre it.
-	mov rax, 0xff00efbeadde00ff  ; dll_stub + 0x18 (iat_function_ptr)
-	mov rdx, 0xff00dec0adde00ff  ; dll_stub + 0x22 (orginal_function_addr)
-	mov qword [rax], rdx
-	xor rax, rax
-	xor rdx, rdx
-	*/
-
 	proc->write_memory(base, (uintptr_t)raw_data, nt_header->FileHeader.SizeOfOptionalHeader + sizeof(nt_header->FileHeader) + sizeof(nt_header->Signature));
 
 	LOG("Mapping PE sections...");
 	map_pe_sections(base, nt_header);
 
 	uint64_t entry_point{ (uint64_t)base + nt_header->OptionalHeader.AddressOfEntryPoint };
-	/**(uint64_t*)(dll_stub + 0x36) = (uint64_t)base;
-	*(uint64_t*)(dll_stub + 0x47) = entry_point;*/
-
-	/*uint64_t entry_point{ (uint64_t)base + nt_header->OptionalHeader.AddressOfEntryPoint };
-	*(uint64_t*)(dll_stub + 0x3F) = (uint64_t)entry_point;
-	*(uint64_t*)(dll_stub + 0x49) = (uint64_t)base;
-	*(uint64_t*)(dll_stub + 0x53) = (uint64_t)(GetProcAddress(GetModuleHandleA("kernel32.dll"), "CreateThread"));*/
-
-
-	/* Save module_base and entry_point to call dllmain correctly
-	sub rsp, 0x28
-	mov rcx, 0xefbeaddeefbeadde ; dll_stub + 0x39 (base)
-	xor rdx, rdx
-	add rdx, 1
-	mov rax, 0xdec0addedec0adde ; dll_stub + 0x4a (entry_point)
-	call rax
-	*/
 
 	LOG("Entry point: 0x%p", entry_point);
 
-	proc->write_memory(stub_base, (uintptr_t)dll_stub, sizeof(dll_stub));
-
-	/*proc->virtual_protect(iat_function_ptr, sizeof(uint64_t), PAGE_READWRITE);
-	proc->write_memory(iat_function_ptr, (uintptr_t)&stub_base, sizeof(uint64_t));*/
-
 	LOG("Injected successfully!");
-	//proc->virtual_protect(iat_function_ptr, sizeof(uint64_t), PAGE_READONLY);
 
 	entrypoint = entry_point;
 	baseaddress = base;
-
-	//proc->create_thread((uint64_t)(base + nt_header->OptionalHeader.AddressOfEntryPoint), base);
 
 	delete[] raw_data;
 	return true;
@@ -306,10 +158,6 @@ void mmap::solve_imports(uint8_t* base, IMAGE_NT_HEADERS* nt_header, IMAGE_IMPOR
 	char* module;
 	while ((module = (char*)get_ptr_from_rva((DWORD64)(import_descriptor->Name), nt_header, (PBYTE)base))) {
 		HMODULE local_module{ LoadLibrary(module) };
-		/*dll should be compiled statically to avoid loading new libraries
-		if (!process.get_module_base(module)) {
-				process.load_library(module);
-		}*/
 
 		IMAGE_THUNK_DATA* thunk_data{ (IMAGE_THUNK_DATA*)get_ptr_from_rva((DWORD64)(import_descriptor->FirstThunk), nt_header, (PBYTE)base) };
 

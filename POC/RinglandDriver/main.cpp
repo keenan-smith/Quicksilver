@@ -29,5 +29,5 @@ NTSTATUS DriverEntry(PDRIVER_OBJECT driver, PUNICODE_STRING registryPath) {
 	}
 
 	ZwClose(thread_handle);
-	return 0xB16B00B5;
+	return 0x0;
 }

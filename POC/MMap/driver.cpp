@@ -142,6 +142,23 @@ uint64_t driver::echo(const SOCKET connection, const char* text) {
 	return 0;
 }
 
+uint64_t driver::get_module_handle(const SOCKET connection, uint32_t pid, const char* module_name) {
+	Packet packet{};
+
+	packet.header.magic = packet_magic;
+	packet.header.type = PacketType::packet_get_module_handle;
+
+	auto& data = packet.data.get_module_handle;
+	data.process_id = pid;
+	strncpy_s(data.module_name, module_name, sizeof(data.module_name));
+
+	uint64_t result = 0;
+	if (send_packet(connection, packet, result))
+		return result;
+
+	return 0;
+}
+
 uint64_t driver::create_thread(const SOCKET connection, uint32_t pid, uintptr_t entrypoint, uintptr_t baseaddress) {
 	Packet packet{};
 

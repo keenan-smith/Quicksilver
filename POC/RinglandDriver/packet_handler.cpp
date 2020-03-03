@@ -114,6 +114,9 @@ uint64_t handle_incoming_packet(const Packet& packet)
 	case PacketType::packet_protect_memory:
 		return handle_protect_memory(packet.data.protect_memory);
 
+	case PacketType::packet_get_module_handle:
+		return handle_get_module_handle(packet.data.get_module_handle);
+
 
 	default:
 		break;

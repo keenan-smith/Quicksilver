@@ -19,7 +19,7 @@ bool usermode_proc_handler::attach(const char* proc_name) {
 }
 
 uint64_t usermode_proc_handler::get_module_base(const std::string& module_name) {
-	MODULEENTRY32 module_entry{};
+	/*MODULEENTRY32 module_entry{};
 	module_entry.dwSize = sizeof(MODULEENTRY32);
 	auto snapshot{ CreateToolhelp32Snapshot(TH32CS_SNAPMODULE, pid) };
 	if (snapshot == INVALID_HANDLE_VALUE)
@@ -33,8 +33,10 @@ uint64_t usermode_proc_handler::get_module_base(const std::string& module_name) 
 			module_entry.dwSize = sizeof(MODULEENTRY32);
 		} while (Module32Next(snapshot, &module_entry));
 	}
-	CloseHandle(snapshot);
-	return NULL;
+	CloseHandle(snapshot);*/
+	uint64_t module_base = driver::get_module_handle(sConnection, pid, module_name.c_str());
+	LOG("Getting base address of %s, address 0x%X", module_name.c_str(), module_base);
+	return module_base;
 }
 	
 void usermode_proc_handler::read_memory(uintptr_t src, uintptr_t dst, size_t size) {
