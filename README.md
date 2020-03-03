@@ -1,2 +1,2 @@
 # ManualMapper
-POC manual mapper for Windows x64 binaries
+Manual mapper for Windows x64 binaries through kernelmode and berkeley sockets
