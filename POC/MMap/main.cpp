@@ -21,27 +21,28 @@ int main(int argc, char* argv[]) {
 	sConnection = driver::connect();
 	if (sConnection == INVALID_SOCKET) {
 		LOG("Connection failed.");
+		return -1;
 	}
 
 	LOG("Connected to driver, Attaching to process : " + string(procname));
 
 	if (!mapper.attach_to_process(procname)) {
 		driver::disconnect(sConnection);
-		return 1;
+		return -1;
 	}
 
 	LOG("Attached to process, loading dll.");
 
 	if (!mapper.load_dll(filename)) {
 		driver::disconnect(sConnection);
-		return 1;
+		return -1;
 	}
 
 	LOG("Loaded dll, injecting into process.");
 
 	if (!mapper.inject(pEntryPoint, pBaseAddress)) {
 		driver::disconnect(sConnection);
-		return 1;
+		return -1;
 	}
 
 	LOG("Injected dll, calling entrypoint.");
@@ -49,7 +50,7 @@ int main(int argc, char* argv[]) {
 	uint32_t pid;
 	if (!is_process_running(procname, pid)) {
 		driver::disconnect(sConnection);
-		return 1;
+		return -1;
 	}
 
 	driver::create_thread(sConnection, pid, pEntryPoint, pBaseAddress);
@@ -62,20 +63,21 @@ int main(int argc, char* argv[]) {
 
 	Sleep(1000);
 
-	LOG("Sending request to shut down server...");
-	LOG("Request returned status: 0x%X", driver::close_server(sConnection));
+	//LOG("Sending request to shut down server...");
+	//LOG("Request returned status: 0x%X", driver::close_server(sConnection));
 
 	driver::disconnect(sConnection);
 
-	const auto connection2 = driver::connect();
+	/*const auto connection2 = driver::connect();
 	if (connection2 == INVALID_SOCKET) {
 		LOG("Connection failed.");
+		return -1;
 	}
 
 	const auto return_stat = driver::echo(connection2, echoText);
 	LOG("Echo returned status: 0x%X", return_status);
 
-	driver::disconnect(connection2);
+	driver::disconnect(connection2);*/
 
 	driver::deinitialize();
 

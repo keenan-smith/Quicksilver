@@ -140,6 +140,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="apiset.cpp" />
     <ClCompile Include="driver.cpp" />
     <ClCompile Include="drvhelper.cpp" />
     <ClCompile Include="main.cpp" />
@@ -149,6 +150,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\RinglandDriver\shared_structs.h" />
+    <ClInclude Include="apiset.h" />
     <ClInclude Include="driver.h" />
     <ClInclude Include="drvhelper.h" />
     <ClInclude Include="logger.h" />

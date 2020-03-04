@@ -97,6 +97,7 @@ UINT64 ZwGetModuleHandle(
         list != &peb->Ldr->InLoadOrderModuleList;
         list = list->Flink) {
         PLDR_DATA_TABLE_ENTRY entry = CONTAINING_RECORD(list, LDR_DATA_TABLE_ENTRY, InLoadOrderLinks);
+        log("Checking module: Base name %wZ, Full name %wZ", entry->BaseDllName, entry->FullDllName);
         if (RtlCompareUnicodeString(&entry->BaseDllName, &module_name_unicode, TRUE) == 0) {
             base = (UINT64)entry->DllBase;
             goto end;

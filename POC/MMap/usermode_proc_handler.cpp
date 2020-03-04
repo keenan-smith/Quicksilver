@@ -1,6 +1,7 @@
 #include "drvhelper.h"
 #include "usermode_proc_handler.h"
 #include "logger.h"
+#include "apiset.h"
 
 usermode_proc_handler::usermode_proc_handler()
 	:handle{ NULL }, pid{ 0 } {}
@@ -18,22 +19,34 @@ bool usermode_proc_handler::attach(const char* proc_name) {
 	return 1;
 }
 
-uint64_t usermode_proc_handler::get_module_base(const std::string& module_name) {
-	/*MODULEENTRY32 module_entry{};
-	module_entry.dwSize = sizeof(MODULEENTRY32);
-	auto snapshot{ CreateToolhelp32Snapshot(TH32CS_SNAPMODULE, pid) };
-	if (snapshot == INVALID_HANDLE_VALUE)
-		return false;
-	if (Module32First(snapshot, &module_entry)) {
-		do {
-			if (!_stricmp(module_entry.szModule, module_name.c_str())) {
-				CloseHandle(snapshot);
-				return (uint64_t)module_entry.hModule;
-			}
-			module_entry.dwSize = sizeof(MODULEENTRY32);
-		} while (Module32Next(snapshot, &module_entry));
+uint64_t usermode_proc_handler::get_module_base(std::string& module_name) {
+	std::string original_module_name = module_name;
+	if ((module_name.find("api-ms") != std::string::npos)) {
+		//pilfered from https://github.com/zodiacon/WindowsInternals/blob/master/APISetMap/APISetMap.cpp
+		module_name = get_dll_name_from_api_set_map(module_name);
+		LOG("Resolved API set, %s == %s", original_module_name.c_str(), module_name.c_str());
+		if (module_name.empty()) {
+			LOG("api.map.set==false");
+		}
 	}
-	CloseHandle(snapshot);*/
+	//MODULEENTRY32 module_entry{};
+	//module_entry.dwSize = sizeof(MODULEENTRY32);
+	//auto snapshot{ CreateToolhelp32Snapshot(TH32CS_SNAPMODULE, pid) };
+	//if (snapshot == INVALID_HANDLE_VALUE)
+	//	return false;
+	//if (Module32First(snapshot, &module_entry)) {
+	//	do {
+	//		//LOG("Checking module: %s", module_entry.szModule);
+	//		if (!_stricmp(module_entry.szModule, module_name.c_str())) {
+	//			CloseHandle(snapshot);
+	//			return (uint64_t)module_entry.hModule;
+	//		}
+	//		module_entry.dwSize = sizeof(MODULEENTRY32);
+	//	} while (Module32Next(snapshot, &module_entry));
+	//}
+	//CloseHandle(snapshot);
+	//return NULL;
+	
 	uint64_t module_base = driver::get_module_handle(sConnection, pid, module_name.c_str());
 	LOG("Getting base address of %s, address 0x%X", module_name.c_str(), module_base);
 	return module_base;

@@ -216,8 +216,10 @@ void mmap::map_pe_sections(uint64_t base, IMAGE_NT_HEADERS* nt_header) {
 }
 
 uint64_t mmap::get_proc_address(const char* module_name, const char* func) {
-	uint64_t remote_module{ proc->get_module_base(module_name) };
+	std::string tmp_module_name(module_name);
+	uint64_t remote_module{ proc->get_module_base(tmp_module_name) };
 	uint64_t local_module{ (uint64_t)GetModuleHandle(module_name) };
+	LOG("| Getting base address of %s, function %s, address 0x%X", module_name, func, remote_module);
 	uint64_t delta{ remote_module - local_module };
 	return ((uint64_t)GetProcAddress((HMODULE)local_module, func) + delta);
 }
@@ -225,7 +227,7 @@ uint64_t mmap::get_proc_address(const char* module_name, const char* func) {
 bool mmap::parse_imports() {
 	LOG("Parsing imports...");
 
-	auto base{ proc->get_module_base(process_name.c_str()) };
+	auto base{ proc->get_module_base(process_name)};
 	if (!base) {
 		LOG_ERROR("Cannot get module base");
 		return false;

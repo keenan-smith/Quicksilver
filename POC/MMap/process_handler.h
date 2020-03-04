@@ -18,7 +18,7 @@ public:
 
 	virtual bool attach(const char* proc_name) = 0;
 
-	virtual	uint64_t get_module_base(const std::string& module_name) = 0;
+	virtual	uint64_t get_module_base(std::string& module_name) = 0;
 
 	virtual void read_memory(uintptr_t src, uintptr_t dst, size_t size) = 0;
 
