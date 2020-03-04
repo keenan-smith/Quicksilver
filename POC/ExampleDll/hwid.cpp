@@ -47,7 +47,7 @@ __forceinline std::string getOSID()
 
 }
 
-__forceinline std::string getID()
+std::string getID()
 {
 
 	std::string str = "";

@@ -3,39 +3,26 @@
 #include <fstream>
 #include <string>
 #include "logger.h"
+#include "monofuncs.h"
+#include "hwid.h"
 
 DWORD WINAPI MainThread(LPVOID params) {
+	AllocConsole();
+	freopen("CONOUT$", "w", stdout);
+	DebugLog("Initialized");
 	Sleep(1);
 	HMODULE hMono = nullptr;
 
 	//AllocConsole();
 
-	//while (hMono == nullptr) {
-	//	//DebugLog("Looking for mono.dll...");
-	//	hMono = GetModuleHandleA("mono-2.0-bdwgc.dll");
-	//	if (hMono == nullptr)
-	//		Sleep(250);
-	//}
+	while (hMono == nullptr) {
+		DebugLog("Looking for mono.dll...");
+		hMono = GetModuleHandleA("mono-2.0-bdwgc.dll");
+		if (hMono == nullptr)
+			Sleep(250);
+	}
 
-	/*char buffer[512];
-	sprintf(buffer, "mono.dll found at 0x%X", hMono);
-
-	MessageBoxA(NULL, buffer, "ERROR", NULL);*/
-	AllocConsole();
-
-	/*std::string string("test");
-	std::ofstream of;
-	of.open("monolog.txt");
-	of << "Test\n";
-	of.close()*/;
-	freopen("CONOUT$", "w", stdout);
-	printf("test\n%s\n", "tst2");
-
-	//DebugLog("Found mono.dll");
-
-	/*DebugLog("mono.dll located at: 0x%X", hMono);
-
-	DebugLog("Attempting to inject C# assembly...");*/
+	DebugLog("Found mono.dll at 0x%X", hMono);
 
 	return 1;
 }

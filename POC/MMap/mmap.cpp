@@ -1,6 +1,7 @@
 #include "mmap.h"
 #include "utils.h"
 #include <TlHelp32.h>
+#include "apiset.h"
 
 mmap::mmap(INJECTION_TYPE type) {
 	/*if (type == INJECTION_TYPE::KERNEL)
@@ -157,13 +158,34 @@ PIMAGE_SECTION_HEADER mmap::get_enclosing_section_header(uint64_t rva, PIMAGE_NT
 void mmap::solve_imports(uint8_t* base, IMAGE_NT_HEADERS* nt_header, IMAGE_IMPORT_DESCRIPTOR* import_descriptor) {
 	char* module;
 	while ((module = (char*)get_ptr_from_rva((DWORD64)(import_descriptor->Name), nt_header, (PBYTE)base))) {
-		HMODULE local_module{ LoadLibrary(module) };
+		std::string module_name = module;
+		std::string original_module_name = module_name;
+
+		if ((module_name.find("api-ms") != std::string::npos)) {
+			//pilfered from https://github.com/zodiacon/WindowsInternals/blob/master/APISetMap/APISetMap.cpp
+			module_name = get_dll_name_from_api_set_map(module_name);
+			LOG("|-> Resolved API set, %s == %s", original_module_name.c_str(), module_name.c_str());
+			if (module_name.empty()) {
+				LOG("api.map.set==false");
+			}
+		}
+		if ((module_name.find("MSVCP") != std::string::npos)) {
+			module_name = "msvcp_win.dll";
+			LOG("|-> Resolved API set, %s == %s", original_module_name.c_str(), module_name.c_str());
+		}
+		if ((module_name.find("VCRUNTIME") != std::string::npos)) {
+			module_name = "ucrtbase.dll";
+			LOG("|-> Resolved API set, %s == %s", original_module_name.c_str(), module_name.c_str());
+		}
+
+		HMODULE local_module{ LoadLibrary(module_name.c_str()) };
 
 		IMAGE_THUNK_DATA* thunk_data{ (IMAGE_THUNK_DATA*)get_ptr_from_rva((DWORD64)(import_descriptor->FirstThunk), nt_header, (PBYTE)base) };
 
 		while (thunk_data->u1.AddressOfData) {
 			IMAGE_IMPORT_BY_NAME* iibn{ (IMAGE_IMPORT_BY_NAME*)get_ptr_from_rva((DWORD64)((thunk_data->u1.AddressOfData)), nt_header, (PBYTE)base) };
-			thunk_data->u1.Function = (uint64_t)(get_proc_address(module, (char*)iibn->Name));
+			thunk_data->u1.Function = (uint64_t)(get_proc_address(module_name.c_str(), (char*)iibn->Name));
+			//LOG("|-->local address of %s, 0x%X", (char*)iibn->Name, (uint64_t)GetProcAddress((HMODULE)local_module, (char*)iibn->Name));
 			thunk_data++;
 		}
 		import_descriptor++;
@@ -219,8 +241,9 @@ uint64_t mmap::get_proc_address(const char* module_name, const char* func) {
 	std::string tmp_module_name(module_name);
 	uint64_t remote_module{ proc->get_module_base(tmp_module_name) };
 	uint64_t local_module{ (uint64_t)GetModuleHandle(module_name) };
-	LOG("| Getting base address of %s, function %s, address 0x%X", module_name, func, remote_module);
-	uint64_t delta{ remote_module - local_module };
+	uint64_t delta{ remote_module - local_module }; 
+	LOG("| Getting base address of %s, function %s, remote address 0x%X, local address 0x%X, function address 0x%X",
+		module_name, func, remote_module, local_module, ((uint64_t)GetProcAddress((HMODULE)local_module, func) + delta));
 	return ((uint64_t)GetProcAddress((HMODULE)local_module, func) + delta);
 }
 

@@ -20,15 +20,6 @@ bool usermode_proc_handler::attach(const char* proc_name) {
 }
 
 uint64_t usermode_proc_handler::get_module_base(std::string& module_name) {
-	std::string original_module_name = module_name;
-	if ((module_name.find("api-ms") != std::string::npos)) {
-		//pilfered from https://github.com/zodiacon/WindowsInternals/blob/master/APISetMap/APISetMap.cpp
-		module_name = get_dll_name_from_api_set_map(module_name);
-		LOG("Resolved API set, %s == %s", original_module_name.c_str(), module_name.c_str());
-		if (module_name.empty()) {
-			LOG("api.map.set==false");
-		}
-	}
 	//MODULEENTRY32 module_entry{};
 	//module_entry.dwSize = sizeof(MODULEENTRY32);
 	//auto snapshot{ CreateToolhelp32Snapshot(TH32CS_SNAPMODULE, pid) };
@@ -48,7 +39,7 @@ uint64_t usermode_proc_handler::get_module_base(std::string& module_name) {
 	//return NULL;
 	
 	uint64_t module_base = driver::get_module_handle(sConnection, pid, module_name.c_str());
-	LOG("Getting base address of %s, address 0x%X", module_name.c_str(), module_base);
+	//LOG("Getting base address of %s, address 0x%X", module_name.c_str(), module_base);
 	return module_base;
 }
 	

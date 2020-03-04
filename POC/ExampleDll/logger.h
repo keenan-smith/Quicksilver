@@ -3,9 +3,10 @@
 bool DebugModeEnabled = true;
 
 template <typename... Args>
-void DebugLog(std::string data, Args... args) {
+void DebugLog(const char* data, Args... args) {
 	if (DebugModeEnabled) {
-		printf(data.c_str(), args...);
+		printf("[Monoloader]: ");
+		printf(data, args...);
 		printf("\n");
 	}
 }

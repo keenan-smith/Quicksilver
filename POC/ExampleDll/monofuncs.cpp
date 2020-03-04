@@ -1,4 +1,17 @@
 #include "monofuncs.h"
+mono_security_set_t setMonoSecurity;
+mono_domain_get_t getMonoDomain;
+mono_get_root_domain_t getRootMonoDomain;
+mono_domain_assembly_open_t openAssembly;
+mono_assembly_get_image_t getAssemblyImageName;
+mono_class_from_name_t getClassFromName;
+mono_class_get_method_from_name_t getClassMethodFromName;
+mono_runtime_invoke_t invokeRuntime;
+mono_thread_attach_t monoAttachToThread;
+mono_image_open_from_data_full mono_image_open_from_data_full_;
+mono_assembly_load_from_full mono_assembly_load_from_full_;
+
+
 void MonoInit(HMODULE hMono)
 {
 	setMonoSecurity = (mono_security_set_t)GetProcAddress(hMono, "mono_security_set_mode");
