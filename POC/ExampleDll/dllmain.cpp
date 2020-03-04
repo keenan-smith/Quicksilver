@@ -13,8 +13,6 @@ DWORD WINAPI MainThread(LPVOID params) {
 	Sleep(1);
 	HMODULE hMono = nullptr;
 
-	//AllocConsole();
-
 	while (hMono == nullptr) {
 		DebugLog("Looking for mono.dll...");
 		hMono = GetModuleHandleA("mono-2.0-bdwgc.dll");
@@ -31,7 +29,6 @@ BOOL APIENTRY DllMain(HMODULE hModule,
 	DWORD  ul_reason_for_call,
 	LPVOID lpReserved
 ) {
-
 		CreateThread(NULL, NULL, MainThread, NULL, NULL, NULL);
 }
 

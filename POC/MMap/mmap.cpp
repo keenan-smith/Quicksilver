@@ -185,7 +185,6 @@ void mmap::solve_imports(uint8_t* base, IMAGE_NT_HEADERS* nt_header, IMAGE_IMPOR
 		while (thunk_data->u1.AddressOfData) {
 			IMAGE_IMPORT_BY_NAME* iibn{ (IMAGE_IMPORT_BY_NAME*)get_ptr_from_rva((DWORD64)((thunk_data->u1.AddressOfData)), nt_header, (PBYTE)base) };
 			thunk_data->u1.Function = (uint64_t)(get_proc_address(module_name.c_str(), (char*)iibn->Name));
-			//LOG("|-->local address of %s, 0x%X", (char*)iibn->Name, (uint64_t)GetProcAddress((HMODULE)local_module, (char*)iibn->Name));
 			thunk_data++;
 		}
 		import_descriptor++;
