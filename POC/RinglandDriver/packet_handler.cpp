@@ -66,10 +66,10 @@ static uint64_t handle_protect_memory(const PacketProtectMemory& packet) {
 	return (uint64_t)(status);
 }
 
-static uint64_t handle_allocate_memory(const PacketAllocateMemory& packet) {
+static uint64_t handle_allocate_memory(const PacketAllocateMemory& packet, uint64_t& status) {
 	uint64_t size = packet.size;
 	uint64_t address = packet.address;
-	NTSTATUS status = ZwVirtualAlloc(packet.process_id, size, packet.allocation_type, packet.protect, address);
+	status = ZwVirtualAlloc(packet.process_id, size, packet.allocation_type, packet.protect, address);
 	return address;
 }
 
@@ -89,7 +89,7 @@ static uint64_t handle_close_server(const PacketCloseServer& packet) {
 	return 0x1;
 }
 
-uint64_t handle_incoming_packet(const Packet& packet)
+uint64_t handle_incoming_packet(const Packet& packet, uint64_t& status)
 {
 	switch (packet.header.type)
 	{
@@ -109,7 +109,7 @@ uint64_t handle_incoming_packet(const Packet& packet)
 		return handle_create_thread(packet.data.create_thread);
 
 	case PacketType::packet_allocate_memory:
-		return handle_allocate_memory(packet.data.allocate_memory);
+		return handle_allocate_memory(packet.data.allocate_memory, status);
 
 	case PacketType::packet_protect_memory:
 		return handle_protect_memory(packet.data.protect_memory);
@@ -126,13 +126,14 @@ uint64_t handle_incoming_packet(const Packet& packet)
 }
 
 // Send completion packet.
-bool complete_request(const SOCKET client_connection, const uint64_t result)
+bool complete_request(const SOCKET client_connection, const uint64_t result, const uint64_t status = 0)
 {
 	Packet packet{ };
 
 	packet.header.magic = packet_magic;
 	packet.header.type = PacketType::packet_completed;
 	packet.data.completed.result = result;
+	packet.data.completed.status = status;
 
 	return send(client_connection, &packet, sizeof(packet), 0) != SOCKET_ERROR;
 }

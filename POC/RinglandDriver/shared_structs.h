@@ -78,6 +78,7 @@ struct PacketGetBaseAddress
 struct PackedCompleted
 {
 	uint64_t result;
+	uint64_t status;
 };
 
 struct PacketHeader

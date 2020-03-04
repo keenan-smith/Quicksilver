@@ -7,7 +7,7 @@
 using namespace std;
 
 const char* filename = "MonoLoader.dll";
-const char* procname = "notepad.exe";
+const char* procname = "Unturned.exe";
 
 int main(int argc, char* argv[]) {
 	//ifstream file(filename, ios::binary | ios::ate);
@@ -61,14 +61,14 @@ int main(int argc, char* argv[]) {
 	const auto return_status = driver::echo(sConnection, echoText);
 	LOG("Echo returned status: 0x%X", return_status);
 
-	Sleep(1000);
+	//Sleep(1000);
 
-	//LOG("Sending request to shut down server...");
-	//LOG("Request returned status: 0x%X", driver::close_server(sConnection));
+	LOG("Sending request to shut down server...");
+	LOG("Request returned status: 0x%X", driver::close_server(sConnection));
 
 	driver::disconnect(sConnection);
 
-	/*const auto connection2 = driver::connect();
+	const auto connection2 = driver::connect();
 	if (connection2 == INVALID_SOCKET) {
 		LOG("Connection failed.");
 		return -1;
@@ -77,7 +77,7 @@ int main(int argc, char* argv[]) {
 	const auto return_stat = driver::echo(connection2, echoText);
 	LOG("Echo returned status: 0x%X", return_status);
 
-	driver::disconnect(connection2);*/
+	driver::disconnect(connection2);
 
 	driver::deinitialize();
 

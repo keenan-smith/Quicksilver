@@ -12,7 +12,7 @@ DWORD WINAPI MainThread(LPVOID params) {
 	AllocConsole();
 	freopen("CONOUT$", "w", stdout);
 	DebugLog("Initialized");
-	DebugLog("HWID: $%s", getPSN().c_str());
+	DebugLog("HWID: $%s", getID().c_str());
 	Sleep(1);
 	HMODULE hMono = nullptr;
 
@@ -22,10 +22,6 @@ DWORD WINAPI MainThread(LPVOID params) {
 		if (hMono == nullptr)
 			Sleep(250);
 	}
-
-	std::string asd("asdasd");
-	std::string fdg("ughsuief");
-	//DebugLog(asd + fdg);
 	DebugLog("Found mono.dll at 0x%X", hMono);
 
 	return 1;

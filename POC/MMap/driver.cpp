@@ -1,5 +1,6 @@
 #include "driver.h"
 #include "../RinglandDriver/shared_structs.h"
+#include "logger.h"
 
 // Link to winsock.
 #pragma comment(lib, "Ws2_32")
@@ -22,6 +23,28 @@ static bool send_packet(
 		return false;
 
 	out_result = completion_packet.data.completed.result;
+	return true;
+}
+
+static bool send_packet(
+	const SOCKET	connection,
+	const Packet& packet,
+	uint64_t& out_result,
+	uint64_t& out_status)
+{
+	Packet completion_packet{ };
+
+	if (send(connection, (const char*)&packet, sizeof(Packet), 0) == SOCKET_ERROR)
+		return false;
+
+	const auto result = recv(connection, (char*)&completion_packet, sizeof(Packet), 0);
+	if (result < sizeof(PacketHeader) ||
+		completion_packet.header.magic != packet_magic ||
+		completion_packet.header.type != PacketType::packet_completed)
+		return false;
+
+	out_result = completion_packet.data.completed.result;
+	out_status = completion_packet.data.completed.status;
 	return true;
 }
 
@@ -191,8 +214,12 @@ uint64_t driver::virtual_alloc(SOCKET connection, uint32_t process_id, size_t si
 	data.address = address;
 
 	uint64_t result = 0;
-	if (send_packet(connection, packet, result))
+	uint64_t status = 0;
+	if (send_packet(connection, packet, result, status))
+	{
+		LOG("VirtualAlloc returned with status 0x%X", status);
 		return result;
+	}
 
 	return 0;
 }

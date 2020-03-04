@@ -46,8 +46,10 @@ void NTAPI thread_connection(void* connection_socket) {
 		if (packet.header.magic != packet_magic)
 			continue;
 
-		const auto packet_result = handle_incoming_packet(packet);
-		if (!complete_request(client_connection, packet_result))
+		uint64_t status = 0;
+
+		const auto packet_result = handle_incoming_packet(packet, status);
+		if (!complete_request(client_connection, packet_result, status))
 			break;
 	}
 
