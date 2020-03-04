@@ -24,4 +24,6 @@ public:
 	virtual uint32_t virtual_protect(uint64_t address, size_t size, uint32_t protect) override;
 
 	virtual uint64_t virtual_alloc(size_t size, uint32_t allocation_type, uint32_t protect, uint64_t address = NULL) override;
+
+	virtual uint32_t get_pid() override;
 };

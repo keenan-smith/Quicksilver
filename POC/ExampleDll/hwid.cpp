@@ -1,7 +1,8 @@
 #include "hwid.h"
 #include <Windows.h>
 #include <intrin.h>
-__forceinline std::string getPSN()
+#include "logger.h"
+std::string getPSN()
 {
 
 	int cpuinfo[4] = { -1 };
@@ -10,13 +11,16 @@ __forceinline std::string getPSN()
 	std::string str = "";
 
 	for (int i = 0; i < 3; i++)
+	{
+		DebugLog("cpuinfo: %d", cpuinfo[i]);
 		str += std::to_string(cpuinfo[i]);
+	}
 
 	return str;
 
 }
 
-__forceinline std::string getHDDSN()
+std::string getHDDSN()
 {
 
 	DWORD sn;
@@ -26,7 +30,7 @@ __forceinline std::string getHDDSN()
 
 }
 
-__forceinline std::string getOSID()
+std::string getOSID()
 {
 
 	char name[MAX_COMPUTERNAME_LENGTH + 1] = {};

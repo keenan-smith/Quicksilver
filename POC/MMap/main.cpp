@@ -7,7 +7,7 @@
 using namespace std;
 
 const char* filename = "MonoLoader.dll";
-const char* procname = "Unturned.exe";
+const char* procname = "notepad.exe";
 
 int main(int argc, char* argv[]) {
 	//ifstream file(filename, ios::binary | ios::ate);
@@ -81,7 +81,7 @@ int main(int argc, char* argv[]) {
 
 	driver::deinitialize();
 
-	system("pause");
+	//system("pause");
 
 	return 1;
 }

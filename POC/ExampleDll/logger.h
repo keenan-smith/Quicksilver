@@ -1,12 +1,12 @@
 #pragma once
 #include <string>
-bool DebugModeEnabled = true;
+extern bool DebugModeEnabled;
 
 template <typename... Args>
-void DebugLog(const char* data, Args... args) {
+void DebugLog(std::string data, Args... args) {
 	if (DebugModeEnabled) {
 		printf("[Monoloader]: ");
-		printf(data, args...);
+		printf(data.c_str(), args...);
 		printf("\n");
 	}
 }

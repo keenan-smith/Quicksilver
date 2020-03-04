@@ -19,6 +19,7 @@ class mmap {
 	std::map<std::string, uint64_t> imports;
 	uint8_t* raw_data;
 	size_t data_size;
+	uintptr_t baseaddr;
 
 public:
 	bool attach_to_process(const char* process_name);
@@ -36,7 +37,7 @@ private:
 	void solve_relocations(uint64_t base, uint64_t relocation_base, IMAGE_NT_HEADERS* nt_header, IMAGE_BASE_RELOCATION* reloc, size_t size);
 	void map_pe_sections(uint64_t base, IMAGE_NT_HEADERS* nt_header);
 
-
+	void load_remote_module(const char* module_name, const char* path);
 	uint64_t get_proc_address(const char* module_name, const char* func);
 	bool parse_imports();
 

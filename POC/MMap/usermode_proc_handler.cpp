@@ -48,3 +48,7 @@ uint32_t usermode_proc_handler::virtual_protect(uint64_t address, size_t size, u
 uint64_t usermode_proc_handler::virtual_alloc(size_t size, uint32_t allocation_type, uint32_t protect, uint64_t address) {
 	return driver::virtual_alloc(sConnection, pid, size, allocation_type, protect, address);
 }
+
+uint32_t usermode_proc_handler::get_pid() {
+	return pid;
+}

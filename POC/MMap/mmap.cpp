@@ -1,3 +1,5 @@
+#include "driver.h"
+#include "drvhelper.h"
 #include "mmap.h"
 #include "utils.h"
 #include <TlHelp32.h>
@@ -236,10 +238,27 @@ void mmap::map_pe_sections(uint64_t base, IMAGE_NT_HEADERS* nt_header) {
 	return;
 }
 
+void mmap::load_remote_module(const char* module_name, const char* path) {
+	LOG("|---> Attempting to load %s in remote process, path: %s", module_name, path);
+	uint64_t location = proc->virtual_alloc(MAX_PATH, MEM_COMMIT | MEM_RESERVE, PAGE_EXECUTE_READWRITE);
+	LOG("|---> Memory for path allocated at 0x%p, pid %d", location, proc->get_pid());
+	proc->write_memory(location, (uintptr_t)path, MAX_PATH);
+	driver::create_thread(sConnection, proc->get_pid(), (uintptr_t)GetProcAddress(GetModuleHandleA("kernel32.dll"), "LoadLibraryA"), location);
+}
+
 uint64_t mmap::get_proc_address(const char* module_name, const char* func) {
 	std::string tmp_module_name(module_name);
-	uint64_t remote_module{ proc->get_module_base(tmp_module_name) };
 	uint64_t local_module{ (uint64_t)GetModuleHandle(module_name) };
+	uint64_t remote_module{ proc->get_module_base(tmp_module_name) };
+	if (!remote_module)
+	{
+		TCHAR buffer[MAX_PATH];
+		GetModuleFileNameA((HMODULE)local_module, buffer, MAX_PATH);
+		load_remote_module(module_name, buffer);
+		Sleep(250);
+		remote_module = proc->get_module_base(tmp_module_name);
+	}
+
 	uint64_t delta{ remote_module - local_module }; 
 	LOG("| Getting base address of %s, function %s, remote address 0x%X, local address 0x%X, function address 0x%X",
 		module_name, func, remote_module, local_module, ((uint64_t)GetProcAddress((HMODULE)local_module, func) + delta));

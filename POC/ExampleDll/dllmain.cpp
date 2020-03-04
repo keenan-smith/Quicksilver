@@ -6,10 +6,13 @@
 #include "monofuncs.h"
 #include "hwid.h"
 
+bool DebugModeEnabled = true;
+
 DWORD WINAPI MainThread(LPVOID params) {
 	AllocConsole();
 	freopen("CONOUT$", "w", stdout);
 	DebugLog("Initialized");
+	DebugLog("HWID: $%s", getPSN().c_str());
 	Sleep(1);
 	HMODULE hMono = nullptr;
 
@@ -20,6 +23,9 @@ DWORD WINAPI MainThread(LPVOID params) {
 			Sleep(250);
 	}
 
+	std::string asd("asdasd");
+	std::string fdg("ughsuief");
+	//DebugLog(asd + fdg);
 	DebugLog("Found mono.dll at 0x%X", hMono);
 
 	return 1;
