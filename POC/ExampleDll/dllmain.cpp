@@ -41,7 +41,9 @@ DWORD WINAPI MainThread(LPVOID params) {
 	DWORD file_size;
 	PVOID file_data = ReadAllBytes("C:\\Users\\Keenan\\source\\repos\\ManualMapper\\POC\\x64\\Release\\Quicksilver.dll", file_size);
 
-	MonoInject(hMono, file_data, file_size, "Quicksilver", "Monoloader", "Hook");
+	DebugLog("Loaded DLL, file size 0x%X", file_size);
+
+	MonoInject(hMono, file_data, file_size, "Quicksilver", "MonoLoader", "Hook");
 
 	return 1;
 }
