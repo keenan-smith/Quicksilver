@@ -5,6 +5,7 @@
 #include "logger.h"
 #include "monofuncs.h"
 #include "hwid.h"
+#include "../MMap/mutexname.h"
 
 PVOID ReadAllBytes(const char* filename, DWORD& size)
 {
@@ -23,8 +24,10 @@ PVOID ReadAllBytes(const char* filename, DWORD& size)
 bool DebugModeEnabled = true;
 
 DWORD WINAPI MainThread(LPVOID params) {
-	AllocConsole();
-	freopen("CONOUT$", "w", stdout);
+	if (DebugModeEnabled) {
+		AllocConsole();
+		freopen("CONOUT$", "w", stdout);
+	}
 	DebugLog("Initialized");
 	DebugLog("HWID: $%s", getID().c_str());
 	Sleep(1);
@@ -43,7 +46,7 @@ DWORD WINAPI MainThread(LPVOID params) {
 
 	DebugLog("Loaded DLL, file size 0x%X", file_size);
 
-	MonoInject(hMono, file_data, file_size, "Quicksilver", "MonoLoader", "Hook");
+	//MonoInject(hMono, file_data, file_size, "Quicksilver", "MonoLoader", "Hook");
 
 	return 1;
 }
@@ -52,7 +55,18 @@ BOOL APIENTRY DllMain(HMODULE hModule,
 	DWORD  ul_reason_for_call,
 	LPVOID lpReserved
 ) {
-		CreateThread(NULL, NULL, MainThread, NULL, NULL, NULL);
+	switch (ul_reason_for_call)
+	{
+		case DLL_PROCESS_ATTACH:
+		{
+			CreateMutexA(0, TRUE, GetMutexName().c_str()); // try to create a named mutex
+			if (GetLastError() == ERROR_ALREADY_EXISTS) { return FALSE; } // did the mutex already exist?
+
+			CreateThread(NULL, NULL, MainThread, NULL, NULL, NULL);
+			break;
+		}
+	}
+	return 0;
 }
 
 

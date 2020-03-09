@@ -4,6 +4,7 @@
 #include "utils.h"
 #include <TlHelp32.h>
 #include "apiset.h"
+#include "helper.h"
 
 mmap::mmap(INJECTION_TYPE type) {
 	/*if (type == INJECTION_TYPE::KERNEL)
@@ -120,11 +121,26 @@ bool mmap::inject(uintptr_t &entrypoint, uintptr_t &baseaddress) {
 
 	uint64_t entry_point{ (uint64_t)base + nt_header->OptionalHeader.AddressOfEntryPoint };
 
+	EntryPointData EDP;
+	EDP.EntryPoint = (LPVOID)entry_point;
+	EDP.ImageBase = (LPVOID)base;
+
+	uint64_t EDP_mem = proc->virtual_alloc(4096, MEM_COMMIT | MEM_RESERVE, PAGE_EXECUTE_READWRITE);
+	uint64_t EDP_thunk = (uintptr_t)((EntryPointData*)EDP_mem + 1);
+
+	LOG("EDP_mem located at 0x%p", EDP_mem);
+	LOG("EDP_thunk located at 0x%p", EDP_thunk);
+
+	proc->write_memory(EDP_mem, (uintptr_t)&EDP, sizeof(EntryPointData));
+	proc->write_memory(EDP_thunk, (uintptr_t)EntryPointCaller, (DWORD)stub - (DWORD)EntryPointCaller);
+
+	proc->write_memory((uintptr_t)(reinterpret_cast<char*>(EDP_thunk) + 0x2), (uintptr_t)&EDP_mem, sizeof(uintptr_t));
+
 	LOG("Entry point: 0x%p", entry_point);
 
 	LOG("Injected successfully!");
 
-	entrypoint = entry_point;
+	entrypoint = EDP_thunk;
 	baseaddress = base;
 
 	delete[] raw_data;
