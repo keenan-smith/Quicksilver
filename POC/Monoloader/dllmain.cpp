@@ -46,7 +46,7 @@ DWORD WINAPI MainThread(LPVOID params) {
 
 	DebugLog("Loaded DLL, file size 0x%X", file_size);
 
-	//MonoInject(hMono, file_data, file_size, "Quicksilver", "MonoLoader", "Hook");
+	MonoInject(hMono, file_data, file_size, "Quicksilver", "MonoLoader", "Hook");
 
 	return 1;
 }

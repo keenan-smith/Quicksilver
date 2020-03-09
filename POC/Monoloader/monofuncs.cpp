@@ -88,7 +88,7 @@ void MonoInject(HMODULE hMono, void* file_data, DWORD file_size, const char* _na
 	}
 	DebugLog("Invoking runtime...");
 
-	Sleep(15000);
+	Sleep(2000);
 
 	invokeRuntime(pMethod, NULL, NULL, NULL);
 }
