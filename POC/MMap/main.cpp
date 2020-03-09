@@ -3,11 +3,34 @@
 #include <fstream>
 #include "logger.h"
 #include "mmap.h"
+#include "mutexname.h"
 
 using namespace std;
 
 const char* filename = "MonoLoader.dll";
 const char* procname = "Unturned.exe";
+LPCWSTR windowName = L"UnityWndClass";
+
+void RemoteCall(LPCWSTR window, LPVOID pointer)
+{
+	while (1) {
+		auto wtoinject = FindWindowExW(NULL, NULL, window, NULL);
+		if (!wtoinject)
+			continue;
+		auto tid = GetWindowThreadProcessId(wtoinject, NULL);
+		if (!tid)
+			continue;
+		auto myHook = SetWindowsHookEx(WH_GETMESSAGE, (HOOKPROC)pointer, GetModuleHandleW(L"ntdll.dll"), tid);
+		PostThreadMessage(tid, WM_USER + 400, 0, 0);
+		while (!OpenMutexA(SYNCHRONIZE, FALSE, GetMutexName().c_str()))
+		{
+			Sleep(1);
+		}
+		UnhookWindowsHookEx(myHook);
+		break;
+	}
+}
+
 
 int main(int argc, char* argv[]) {
 	//ifstream file(filename, ios::binary | ios::ate);
@@ -53,7 +76,10 @@ int main(int argc, char* argv[]) {
 		return -1;
 	}
 
-	driver::create_thread(sConnection, pid, pEntryPoint, pBaseAddress);
+	//Battleye throws "Corrupted memory: #0" error if it detects that a thread has been created with ZwCreateThread.
+	//driver::create_thread(sConnection, pid, pEntryPoint, NULL); 
+	RemoteCall(windowName, (LPVOID)pEntryPoint);
+
 
 	LOG("Calling out to RinglandDriver, looking for a response!");
 	const char* echoText = "ping!";

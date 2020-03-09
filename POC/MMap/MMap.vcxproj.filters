@@ -65,5 +65,11 @@
     <ClInclude Include="apiset.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\ExampleDll\helper.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="mutexname.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

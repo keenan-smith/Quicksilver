@@ -149,12 +149,14 @@
     <ClCompile Include="utils.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\ExampleDll\helper.h" />
     <ClInclude Include="..\RinglandDriver\shared_structs.h" />
     <ClInclude Include="apiset.h" />
     <ClInclude Include="driver.h" />
     <ClInclude Include="drvhelper.h" />
     <ClInclude Include="logger.h" />
     <ClInclude Include="mmap.h" />
+    <ClInclude Include="mutexname.h" />
     <ClInclude Include="process_handler.h" />
     <ClInclude Include="usermode_proc_handler.h" />
     <ClInclude Include="utils.h" />
