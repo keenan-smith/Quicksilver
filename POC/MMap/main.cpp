@@ -15,17 +15,31 @@ void RemoteCall(LPCWSTR window, LPVOID pointer)
 {
 	while (1) {
 		auto wtoinject = FindWindowExW(NULL, NULL, window, NULL);
+		LOG("Found window, HWND: 0x%X", wtoinject);
 		if (!wtoinject)
 			continue;
 		auto tid = GetWindowThreadProcessId(wtoinject, NULL);
 		if (!tid)
 			continue;
+		LOG("Found TID: 0x%X | Setting hook.", tid);
 		auto myHook = SetWindowsHookEx(WH_GETMESSAGE, (HOOKPROC)pointer, GetModuleHandleW(L"ntdll.dll"), tid);
-		PostThreadMessage(tid, WM_USER + 400, 0, 0);
-		while (!OpenMutexA(SYNCHRONIZE, FALSE, GetMutexName().c_str()))
+		if (!PostThreadMessage(tid, WM_USER + 400, 0, 0))
+			LOG("PostThreadMessage failed with error code 0x%X", GetLastError());
+		else
+			LOG("PostThreadMessage successful!");
+		int count = 1;
+		while (1)
 		{
-			Sleep(1);
+			if (OpenMutexA(SYNCHRONIZE, FALSE, GetMutexName().c_str()) || (count > 10))
+				break;
+			LOG("Attempt #%d failed, trying again...", count);
+			Sleep(500);
+			count++;
 		}
+		if (count > 10)
+			LOG("Failed to call entrypoint!");
+		else
+			LOG("Remote call successful!");
 		UnhookWindowsHookEx(myHook);
 		break;
 	}
@@ -70,11 +84,11 @@ int main(int argc, char* argv[]) {
 
 	LOG("Injected dll, calling entrypoint.");
 
-	uint32_t pid;
+	/*uint32_t pid;
 	if (!is_process_running(procname, pid)) {
 		driver::disconnect(sConnection);
 		return -1;
-	}
+	}*/
 
 	//Battleye throws "Corrupted memory: #0" error if it detects that a thread has been created with ZwCreateThread.
 	//driver::create_thread(sConnection, pid, pEntryPoint, NULL); 
