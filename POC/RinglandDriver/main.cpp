@@ -3,6 +3,7 @@
 #include "sockets.h"
 #include "log.h"
 #include "server.h"
+#include "main.h"
 
 
 NTSTATUS DriverEntry(PDRIVER_OBJECT driver, PUNICODE_STRING registryPath) {
