@@ -237,7 +237,17 @@ NTSTATUS InitDynamicData(IN OUT PDYNAMIC_DATA pData)
             }
             else
             {
-                return STATUS_NOT_SUPPORTED;
+                pData->KExecOpt = 0x1BF;
+                pData->Protection = 0x6B2;
+                pData->EProcessFlags2 = 0x300;
+                pData->ObjTable = 0x418;
+                pData->VadRoot = 0x610;
+                pData->NtCreateThdIndex = 0xC4;
+                pData->NtTermThdIndex = 0x53;
+                pData->PrevMode = 0x232;
+                pData->ExitStatus = 0x6E0;
+                pData->MiAllocPage = 0;
+                break;
             }
         default:
             break;
